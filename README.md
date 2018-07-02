@@ -11,10 +11,10 @@ This addon only tries to give you guesstimate on what loot method benefits your 
 
 Remember to fill your character's wishlist at Encounter Journal (Check the Loot-tab for wishlist-buttons). Wishlist-buttons:
 
-* Green plus (Green for LUI): Item is on Wishlist from higher difficulty
-* Red plus (Red for LUI): Item is on Wishlist from this difficulty
-* Red minus (Blue for LUI): Item is on Wishlist from lower difficulty
-* Gray minus (White for LUI): Item isn't on Wishlist
+* Green **+** (Green for LUI): Item is on Wishlist from higher difficulty
+* Red **+** (Red for LUI): Item is on Wishlist from this difficulty
+* Red **-** (Blue for LUI): Item is on Wishlist from lower difficulty
+* Gray **-** (White for LUI): Item isn't on Wishlist
 
 Even though at current version (1.3) you can see Wishlist-buttons on all EncounterJournal Loot-tabs, only WoD raids (Highmaul and Blackrock Foundry at the time of LOIHLoot 1.3) are supported by the Sync at the moment.
 
@@ -70,13 +70,16 @@ N.B.: You running the raids for few weeks doesn't give you enough data to do any
 
 ##### For 6.2 Personal loot **WILL** yield more loot than Group loot:
 
+Quote from Dev Watercooler -- Itemization in 6.2:
 > First, rather than treating loot chances independently for each player -- sometimes yielding only one or even zero items for a group -- we'll use a system similar to Group Loot to determine how many items a boss will award based on eligible group size. As a result, groups will receive a much more predictable number of drops when they defeat a boss. In addition, set items will reliably drop in Personal Loot, just like they do in Group Loot today. The end result is that groups using Personal Loot will acquire their 2- and 4-piece set bonuses at around the same time as groups using Group Loot acquire theirs.
 > We're also increasing the overall rate of reward for Personal Loot, giving players more items overall to offset the fact that Personal Loot rewards can't be distributed among group members. We know that finding that one awesome specific trinket to round out your gear set can be difficult with Personal Loot, and this should help increase your odds.
-> Quote from Dev Watercooler -- Itemization in 6.2 - http://eu.battle.net/wow/en/blog/19162236?page=1#1
 
+http://eu.battle.net/wow/en/blog/19162236?page=1#1
+
+Quote from Game Designer Watcher @ WoW Forums:
 > - More items will drop on average for a raid using 6.2 Personal Loot than would have dropped using 6.0/6.1 Personal Loot.
 > - More items will drop on average for a raid using 6.2 Personal Loot than would drop for that raid using any form of Group Loot (Master, Need/Greed, etc.).
-> Quote from Game Designer Watcher @ WoW Forums - http://us.battle.net/wow/en/forum/topic/17346368401?page=1#20
+http://us.battle.net/wow/en/forum/topic/17346368401?page=1#20
 
 You should use Personal loot always unless you are min-maxing progress and loot distribution, funneling loot to someone or your raid is almost fully geared.
 
