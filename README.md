@@ -1,4 +1,4 @@
-# WIP
+# WIP - This addon is about to recieve some heavy rewriting in the near future!
 
 # LOIHLoot
 
@@ -70,16 +70,13 @@ N.B.: You running the raids for few weeks doesn't give you enough data to do any
 
 ##### For 6.2 Personal loot **WILL** yield more loot than Group loot:
 
-Quote from Dev Watercooler -- Itemization in 6.2:
+Quote from Dev Watercooler -- Itemization in 6.2: http://eu.battle.net/wow/en/blog/19162236?page=1#1
 > First, rather than treating loot chances independently for each player -- sometimes yielding only one or even zero items for a group -- we'll use a system similar to Group Loot to determine how many items a boss will award based on eligible group size. As a result, groups will receive a much more predictable number of drops when they defeat a boss. In addition, set items will reliably drop in Personal Loot, just like they do in Group Loot today. The end result is that groups using Personal Loot will acquire their 2- and 4-piece set bonuses at around the same time as groups using Group Loot acquire theirs.
 > We're also increasing the overall rate of reward for Personal Loot, giving players more items overall to offset the fact that Personal Loot rewards can't be distributed among group members. We know that finding that one awesome specific trinket to round out your gear set can be difficult with Personal Loot, and this should help increase your odds.
 
-http://eu.battle.net/wow/en/blog/19162236?page=1#1
-
-Quote from Game Designer Watcher @ WoW Forums:
+Quote from Game Designer Watcher @ WoW Forums: http://us.battle.net/wow/en/forum/topic/17346368401?page=1#20
 > - More items will drop on average for a raid using 6.2 Personal Loot than would have dropped using 6.0/6.1 Personal Loot.
 > - More items will drop on average for a raid using 6.2 Personal Loot than would drop for that raid using any form of Group Loot (Master, Need/Greed, etc.).
-http://us.battle.net/wow/en/forum/topic/17346368401?page=1#20
 
 You should use Personal loot always unless you are min-maxing progress and loot distribution, funneling loot to someone or your raid is almost fully geared.
 
