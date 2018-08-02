@@ -2,7 +2,7 @@
 
 # LOIHLoot
 
-This addon only tries to give you guesstimate on what loot method benefits your raid the most. It doesn't take any unbalances in the composition or already loot saved players into account. With out the real drop chances from Blizzard I can't give you accurate answer what loot system is the best and even with correct numbers you'd still have to beat the RNGesus.
+Gives players option to create Wishlists from raid drops. For guild officers addon also gives option to synchronize data from all raid members to give them idea what bosses should be focused lootwise for maximum chance of getting upgrades.
 
 ---
 
@@ -11,16 +11,21 @@ This addon only tries to give you guesstimate on what loot method benefits your 
 
 Remember to fill your character's wishlist at Encounter Journal (Check the Loot-tab for wishlist-buttons). Wishlist-buttons:
 
-* Green **+** (Green for LUI): Item is on Wishlist from higher difficulty
-* Red **+** (Red for LUI): Item is on Wishlist from this difficulty
-* Red **-** (Blue for LUI): Item is on Wishlist from lower difficulty
-* Gray **-** (White for LUI): Item isn't on Wishlist
+* Left checkbox is for Mainspec items.
+* Right checkbox is for Offspec items.
+* Same item can't be on both Mainspec and Offspec wishlists.
+* For vanity items (like mounts and pets) there will be only one box.
 
-Even though at current version (1.3) you can see Wishlist-buttons on all EncounterJournal Loot-tabs, only WoD raids (Highmaul and Blackrock Foundry at the time of LOIHLoot 1.3) are supported by the Sync at the moment.
+* Empty box: Item isn't on Wishlist and can be added to Wishlist with a click.
+* Yellow checkmark: Item is on Wishlist from this difficulty and can be removed from Wishlist with a click.
+* Green arrow: Item is on Wishlist from lower difficulty and can be upgraded to this difficulty with a click.
+* Red arrow: Item is on Wishlist from higher difficulty and can be downgraded to this difficulty with a click.
 
-LOIHLoot should automaticly remove items from your wishlist when you receive them and any Essences on your wishlist should be removed when you have at least 5 Tier-items, -tokens or Essences.
+Even though at current version you can see Wishlist-buttons on all EncounterJournal Loot-tabs, only raids are supported by the Sync at the moment.
 
-**NB:** Sync sends the wishlist data of **items that are equal or lower to the current raid difficulty** (If you are in Heroic raid, your Normal and Heroic items from wishlist gets passed on, but your Mythic items doesn't), so **you should add items to you wishlist at the lowest difficulty level you mostly raid or the items benefit you** if you are raiding on multiple different difficulties at the same time.
+LOIHLoot should automaticly remove items from your wishlist when you receive them.
+
+**NB:** Sync sends the wishlist data of **items that are EQUAL or LOWER to the CURRENT raid difficulty** (If you are in Heroic raid, your Normal and Heroic items from wishlist gets passed on, but your Mythic items doesn't), so **you should add items to you wishlist at the lowest difficulty level you mostly raid or the items benefit you** if you are raiding on multiple different difficulties at the same time.
 
 #### Leaders: LOIHLoot window
 
@@ -36,15 +41,13 @@ Use `/loihloot` or `/lloot` with the following commands:
 
 Use the slash command without any additional commands to toggle the LOIHLoot window.
 
-When in raid, the Sync-button becomes avalable for guild officers and the loot method buttons become available for raid leader. When pressing the Sync-button it disables the button for 15 seconds to prevent spam, but everyone in raid should get the same data from one button press to give system more transparency.
+When in raid, the Sync-button becomes avalable for guild officers. When pressing the Sync-button it disables the button for 15 seconds to prevent spam, but everyone in raid should get the same data from one button press.
 
 ---
 
 ### Known issues:
 
 * Wishlist-buttons show up on all Loot-tabs on EncounterJournal
-* If you have your own class Essence (from Blackhand) on your wishlist and loot any non-your class tier items and/or Essences and hit that 5 Tiers mark, your own class Essence according to LOIHLoot 1.3 code logic will be removed from your wishlist.
-* Horribad buttons with LUI. LUI replaces some of the WoW's default textures (you shouldn't do that!) and some of them happen to be same as what LOIHLoot uses.
 
 ---
 
@@ -79,6 +82,9 @@ Quote from Game Designer Watcher @ WoW Forums: http://us.battle.net/wow/en/forum
 > - More items will drop on average for a raid using 6.2 Personal Loot than would drop for that raid using any form of Group Loot (Master, Need/Greed, etc.).
 
 You should use Personal loot always unless you are min-maxing progress and loot distribution, funneling loot to someone or your raid is almost fully geared.
+
+##### For 8.0 Personal loot is the ONLY loot method for groups
+> Said by Ion Hazzikostas (aka "Watcher") in BfA Q&A
 
 #### Translations
 

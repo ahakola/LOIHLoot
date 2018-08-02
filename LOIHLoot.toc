@@ -2,11 +2,11 @@
 ## Author: Sanex (Arathor EU)
 ## Title: LOIHLoot
 ## Version: @project-version@
-## Notes: Syncs players' loot wishlists to raid leader(s) to help determine best loot method.
-## SavedVariables: LOIHLootDB
+## Notes: Syncs players' loot wishlists to raid leader(s) to help determine best boss to focus lootwise.
 ## SavedVariablesPerCharacter: LOIHLootCharDB
 
 Localization-en.lua
+Localization-de.lua
 
 LOIHLoot.lua
 LOIHLootFrame.xml

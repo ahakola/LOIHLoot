@@ -23,52 +23,45 @@ end)
 --  BACKGROUND TEXTURES
 
 local topLeftIcon = LOIHLootFrame:CreateTexture(nil, "BACKGROUND")
+topLeftIcon:SetSize(60, 60)
 topLeftIcon:SetPoint("TOPLEFT", 7, -6)
-topLeftIcon:SetWidth(60)
-topLeftIcon:SetHeight(60)
 SetPortraitToTexture(topLeftIcon, "Interface\\FriendsFrame\\FriendsFrameScrollIcon")
 LOIHLootFrame.TopLeftIcon = topLeftIcon
 
 local topLeft = LOIHLootFrame:CreateTexture(nil, "BORDER")
+topLeft:SetSize(256, 256)
 topLeft:SetPoint("TOPLEFT")
-topLeft:SetWidth(256)
-topLeft:SetHeight(256)
 topLeft:SetTexture("Interface\\PaperDollInfoFrame\\UI-Character-General-TopLeft")
 LOIHLootFrame.TopLeft = topLeft
 
 local topRight = LOIHLootFrame:CreateTexture(nil, "BORDER")
+topRight:SetSize(128, 256)
 topRight:SetPoint("TOPRIGHT")
-topRight:SetWidth(128)
-topRight:SetHeight(256)
 topRight:SetTexture("Interface\\PaperDollInfoFrame\\UI-Character-General-TopRight")
 LOIHLootFrame.BopRight = topRight
 
 local bottomLeft = LOIHLootFrame:CreateTexture(nil, "BORDER")
+bottomLeft:SetSize(256, 256)
 bottomLeft:SetPoint("BOTTOMLEFT")
-bottomLeft:SetWidth(256)
-bottomLeft:SetHeight(256)
-bottomLeft:SetTexture("Interface\\PaperDollInfoFrame\\SkillFrame-BotLeft")
+bottomLeft:SetTexture("Interface\\PaperDollInfoFrame\\UI-Character-General-BottomLeft")
 LOIHLootFrame.BottomLeft = bottomLeft
 
 local bottomRight = LOIHLootFrame:CreateTexture(nil, "BORDER")
+bottomRight:SetSize(128, 256)
 bottomRight:SetPoint("BOTTOMRIGHT")
-bottomRight:SetWidth(128)
-bottomRight:SetHeight(256)
-bottomRight:SetTexture("Interface\\PaperDollInfoFrame\\SkillFrame-BotRight")
+bottomRight:SetTexture("Interface\\PaperDollInfoFrame\\UI-Character-General-BottomRight")
 LOIHLootFrame.BottomRight = bottomRight
 
 local barLeft = LOIHLootFrame:CreateTexture(nil, "ARTWORK")
+barLeft:SetSize(256, 16)
 barLeft:SetPoint("TOPLEFT", 15, -314)
-barLeft:SetWidth(256)
-barLeft:SetHeight(16)
 barLeft:SetTexture("Interface\\ClassTrainerFrame\\UI-ClassTrainer-HorizontalBar")
 barLeft:SetTexCoord(0, 1, 0, 0.25)
 LOIHLootFrame.BarLeft = barLeft
 
 local barRight = LOIHLootFrame:CreateTexture(nil, "ARTWORK")
+barRight:SetSize(75, 16)
 barRight:SetPoint("LEFT", barLeft, "RIGHT")
-barRight:SetWidth(75)
-barRight:SetHeight(16)
 barRight:SetTexture("Interface\\ClassTrainerFrame\\UI-ClassTrainer-HorizontalBar")
 barRight:SetTexCoord(0, 0.29296875, 0.25, 0.5)
 LOIHLootFrame.BarRight = barRight
@@ -84,9 +77,8 @@ LOIHLootFrame.TitleText = title
 --  DRAG REGION
 
 local drag = CreateFrame("Frame", nil, LOIHLootFrame)
+drag:SetSize(256, 28)
 drag:SetPoint("TOP", 8, -10)
-drag:SetWidth(256)
-drag:SetHeight(28)
 LOIHLootFrame.DragFrame = drag
 
 drag:SetScript("OnMouseDown", function(self, button)
@@ -97,21 +89,16 @@ drag:SetScript("OnMouseDown", function(self, button)
 	end
 end)
 
-drag:SetScript("OnMouseUp", function(self, button)
+local function _StopMovingFrame(self, ...)
 	if LOIHLootFrame.isMoving then
 		LOIHLootFrame:StopMovingOrSizing()
 		LOIHLootFrame:SetUserPlaced(false)
 		LOIHLootFrame.isMoving = nil
 	end
-end)
+end
 
-drag:SetScript("OnHide", function(self)
-	if LOIHLootFrame.isMoving then
-		LOIHLootFrame:StopMovingOrSizing()
-		LOIHLootFrame:SetUserPlaced(false)
-		LOIHLootFrame.isMoving = nil
-	end
-end)
+drag:SetScript("OnMouseUp", _StopMovingFrame)
+drag:SetScript("OnHide", _StopMovingFrame)
 
 ------------------------------------------------------------------------
 --  CLOSE X BUTTON
@@ -121,57 +108,27 @@ closeX:SetPoint("TOPRIGHT", -30, -8)
 LOIHLootFrame.CloseButtonX = closeX
 
 ------------------------------------------------------------------------
---  MASTER LOOTER BUTTON
-
-local master = CreateFrame("Button", "$parentMasterLooter", LOIHLootFrame, "UIPanelButtonTemplate")
-master:SetPoint("BOTTOMRIGHT", -42, 80)
-master:SetSize(107, 22)
-master:SetNormalFontObject(GameFontNormalSmall)
-master:SetHighlightFontObject(GameFontHighlightSmall)
-master:SetDisabledFontObject(GameFontDisableSmall)
-master:SetScript("OnClick", private.Frame_MasterButtonOnClick)
-master:SetText(L.BUTTON_MASTER_LOOTER)
-LOIHLootFrame.MasterButton = master
-
-------------------------------------------------------------------------
---  NEED BEFORE GREED BUTTON
-
-local need = CreateFrame("Button", "$parentNeedBeforeGreed", LOIHLootFrame, "UIPanelButtonTemplate")
-need:SetPoint("BOTTOMRIGHT", master, "BOTTOMLEFT", -2, 0)
-need:SetSize(107, 22)
-need:SetNormalFontObject(GameFontNormalSmall)
-need:SetHighlightFontObject(GameFontHighlightSmall)
-need:SetDisabledFontObject(GameFontDisableSmall)
-need:SetScript("OnClick", private.Frame_NeedButtonOnClick)
-need:SetText(L.BUTTON_NEED_BEFORE_GREED)
-LOIHLootFrame.NeedButton = need
-
-------------------------------------------------------------------------
---  PERSONAL BUTTON
-
-local personal = CreateFrame("Button", "$parentPersonal", LOIHLootFrame, "UIPanelButtonTemplate")
-personal:SetPoint("BOTTOMLEFT", 17, 80)
-personal:SetSize(107, 22)
-personal:SetNormalFontObject(GameFontNormalSmall)
-personal:SetHighlightFontObject(GameFontHighlightSmall)
-personal:SetDisabledFontObject(GameFontDisableSmall)
-personal:SetScript("OnClick", private.Frame_PersonalButtonOnClick)
-personal:SetText(L.BUTTON_PERSONAL)
-LOIHLootFrame.PersonalButton = personal
-
-------------------------------------------------------------------------
 --  SYNC BUTTON
 
 local sync = CreateFrame("Button", "$parentSync", LOIHLootFrame, "UIPanelButtonTemplate")
+sync:SetSize(60, 22)
 sync:SetPoint("TOPRIGHT", -40, -49)
-sync:SetWidth(60)
-sync:SetHeight(22)
 sync:SetNormalFontObject(GameFontNormalSmall)
 sync:SetHighlightFontObject(GameFontHighlightSmall)
 sync:SetDisabledFontObject(GameFontDisableSmall)
 sync:SetScript("OnClick", private.Frame_SyncButtonOnClick)
 sync:SetText(L.BUTTON_SYNC)
 LOIHLootFrame.SyncButton = sync
+
+------------------------------------------------------------------------
+--  SYNC STATUS TEXT
+
+local syncText = sync:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+syncText:SetSize(100, 0)
+syncText:SetPoint("RIGHT", sync, "LEFT", -10, 0)
+syncText:SetJustifyH("RIGHT")
+syncText:SetIndentedWordWrap(false)
+LOIHLootFrame.SyncText = syncText
 
 ------------------------------------------------------------------------
 --  TAB BUTTONS
@@ -193,18 +150,16 @@ LOIHLootFrame.SubTitleTab= subtitleTab
 --  LIST FRAME
 
 local listFrame = CreateFrame("Frame", "$parentListFrame", LOIHLootFrame)
+listFrame:SetSize(320, 242)
 listFrame:SetPoint("TOPLEFT", 20, -74)
-listFrame:SetWidth(320)
-listFrame:SetHeight(240)
 LOIHLootFrame.ListFrame = listFrame
 
 ------------------------------------------------------------------------
 --  LIST SCROLLBAR
 
 local scrollFrame = CreateFrame("ScrollFrame", "$parentScrollFrame", listFrame, "HybridScrollFrameTemplate")
-scrollFrame:SetPoint("TOPLEFT", 0, -2)
-scrollFrame:SetWidth(296)
-scrollFrame:SetHeight(240)
+scrollFrame:SetSize(296, 242)
+scrollFrame:SetPoint("TOPLEFT")
 scrollFrame.stepSize = private.LIST_BUTTON_HEIGHT*4
 scrollFrame.update = private.Frame_UpdateList
 LOIHLootFrame.ScrollFrame = scrollFrame
@@ -218,24 +173,22 @@ LOIHLootFrame.ScrollBar = scrollBar
 ------------------------------------------------------------------------
 --  LIST BUTTONS
 
-HybridScrollFrame_CreateButtons(scrollFrame, "WishlistTemplate", 2, 0, "TOPLEFT", "TOPLEFT", 0, 2, "TOP", "BOTTOM")
+HybridScrollFrame_CreateButtons(scrollFrame, "LOIHLootWishlistTemplate", 2, 0, "TOPLEFT", "TOPLEFT", 0, 2, "TOP", "BOTTOM")
 
 ------------------------------------------------------------------------
 --  DESCRIPTION FRAME
 
 local description = CreateFrame("Frame", nil, LOIHLootFrame)
-description:SetPoint("TOPLEFT", 25, -330)
-description:SetWidth(317)
-description:SetHeight(76)
+description:SetSize(320, 102)
+description:SetPoint("TOPLEFT", 20, -326)
 LOIHLootFrame.DescriptionFrame = description
 
 ------------------------------------------------------------------------
 --  TEXT SCROLL FRAME (for non-editable text)
 
 local textScroll = CreateFrame("ScrollFrame", "LOIHLootTextScrollFrame", description)
+textScroll:SetSize(296, 102)
 textScroll:SetPoint("TOPLEFT")
-textScroll:SetWidth(306)
-textScroll:SetHeight(76)
 textScroll:Hide()
 textScroll.scrollBarHideable = true
 LOIHLootFrame.TextScrollFrame = textScroll
@@ -247,29 +200,27 @@ textScroll:SetScript("OnScrollRangeChanged", function(self, xOffset, yOffset)
 	-- textbox, so when this happens we also set the scrollbar
 	-- position to zero to show the top of the text always.
 	ScrollFrame_OnScrollRangeChanged(self, yOffset)
-	LOIHLootFrameTextScrollFrameScrollBar:SetValue(0)
+	LOIHLootTextScrollFrameScrollBar:SetValue(0)
 end)
 
 local textBar = CreateFrame("Slider", "$parentScrollBar", textScroll, "UIPanelScrollBarTemplate")
-textBar:SetPoint("TOPLEFT", textScroll, "TOPRIGHT", -4, -14)
-textBar:SetPoint("BOTTOMLEFT", textScroll, "BOTTOMRIGHT", -4, 14)
+textBar:SetPoint("TOPLEFT", textScroll, "TOPRIGHT", 8, -16)
+textBar:SetPoint("BOTTOMLEFT", textScroll, "BOTTOMRIGHT", 8, 14)
 LOIHLootFrame.TextScrollFrame.ScrollBar = textBar
 
 ScrollFrame_OnLoad(textScroll)
 ScrollFrame_OnScrollRangeChanged(textScroll, 0)
 
 local textChild = CreateFrame("Frame", "$parentScrollChild", textScroll)
+textChild:SetSize(296, 102)
 textChild:SetPoint("TOPLEFT")
-textChild:SetWidth(296)
-textChild:SetHeight(76)
 textChild:EnableMouse(true)
 textScroll:SetScrollChild(textChild)
 LOIHLootFrame.TextScrollChild = textChild
 
 local textBox = textChild:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+textBox:SetSize(286, 0)
 textBox:SetPoint("TOPLEFT", 10, -2)
-textBox:SetWidth(286)
-textBox:SetHeight(0)
 textBox:SetJustifyH("LEFT")
 textBox:SetIndentedWordWrap(false)
 LOIHLootFrame.TextBox = textBox
