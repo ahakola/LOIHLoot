@@ -226,6 +226,16 @@ textBox:SetIndentedWordWrap(false)
 LOIHLootFrame.TextBox = textBox
 
 ------------------------------------------------------------------------
+--  BONUSROLLFRAME
+
+local bonusText = BonusRollFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+--bonusText:SetPoint("RIGHT", BonusRollFrame.PromptFrame.RollButton, "LEFT", -10, 0)
+bonusText:SetPoint("RIGHT", BonusRollFrame.PromptFrame.InfoFrame)
+bonusText:SetJustifyH("RIGHT")
+bonusText:Hide()
+LOIHLootFrame.BonusText = bonusText
+
+------------------------------------------------------------------------
 --	Addon
 
 LOIHLootFrame:SetScript("OnEvent", private.OnEvent)

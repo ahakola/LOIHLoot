@@ -22,6 +22,8 @@ L.PRT_UNKOWN_DIFFICULTY = "ERROR - Unknown raid difficulty! Not sending SyncRequ
 
 L.BUTTON_SYNC = "Sync"
 L.SENDING_SYNC = "Sending sync request...\nDisabling Sync-button for 15 seconds."
+L.NEVER = "Never"
+L.SHORT_SYNC_LINE = "Last sync: %s" -- L.NEVER
 L.SYNC_LINE = "Last sync (%s): %s (%d/%d in raid replied)" -- difficultyName, _lastSync, _syncReplies, _raidCount
 L.TAB_WISHLIST = "Wishlist"
 L.UNKNOWN = "Unknown"
@@ -30,6 +32,7 @@ L.SYNCSTATUS_OK = "Sync OK"
 L.SYNCSTATUS_MISSING = "NO Sync!"
 L.SYNCSTATUS_INCOMPLETE = "Roster changed since last sync!"
 
+L.WISHLIST = "Wishlist"
 L.LONG_MAINSPEC = "Mainspec"
 L.LONG_OFFSPEC = "Offspec"
 L.LONG_VANITY = "Vanity"

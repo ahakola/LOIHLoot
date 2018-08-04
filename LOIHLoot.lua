@@ -69,12 +69,86 @@ For 8.0 Personal loot is the ONLY loot method for groups
 	- Said by Ion Hazzikostas (aka "Watcher") in BfA Q&A
 
 ------------------------------------------------------------------------
+MEMO for future features:
+
+BOSS_KILL
+	1951
+	Flotsam
+
+SPELL_CONFIRMATION_PROMT
+	227131 -- spellID
+	1
+	""
+	180 -- timeout?
+	1273 -- currencyID
+	1
+	14 -- difficultyID
+
+SPELL_CONFIRMATION_TIMEOUT
+	227131
+	1
+
+BonusRollFrame = {
+	currencyID = 1273,
+	difficultyID = 14,
+	encounterID = 1795,
+	instanceID = 822,
+	spellID = 227131
+}
+
+GetCurrencyInfo(1273)
+	[name] = "Seal of Broken Fate",
+	[amount] = 6,
+	[texture] = 1604167,
+	[earnedThisWeek] = 0,
+	[weeklyMax] = 0,
+	[totalMax] = 6,
+	[isDiscovered] = true,
+	[rarity] = 1
+
+GetDifficultyInfo(14)
+	[name] = "Normal",
+	[groupType] = "raid",
+	[isHeroic] = false,
+	[isChallengeMode] = false,
+	[displayHeroic] = false,
+	[displayMythic] = false,
+	[toggleDifficultyID] = false
+
+EJ_GetEncounterInfo(1795)
+	[name] = "Flotsam",
+	[description] = "Flotsam emerged from the ocean depths to sate his hunger. The first to cross his path were the swamp murlocs of Shipwreck Cove, which Flotsam devoured by the dozens. Despite consuming most of their tr"...+209,
+	[encounterID] = 1795,
+	[rootSectionID] = 13841,
+	[link] = "|cff66bbff|Hjournal:1:1795:0|h[Flotsam]|h|r",
+	[instanceID] = 822
+
+EJ_GetInstanceInfo(822)
+	[name] = "Broken Isles",
+	[description] = "This area once stood as the cradle of elven civilization, centered around the ancient elven capital of Suramar, until the Sundering tore the land apart. While the power of the Nightwell preserved the "...+311,
+	[bgImage] = 1411842,
+	[icon] = 1411854,
+	[loreImage] = 1411848,
+	[buttonImage] = 1411866,
+	[dungeonAreaMapID] = 0,
+	[link] = "|cff66bbff|Hjournal:0:822:14|h[Broken Isles]|h|r",
+	[shouldDisplayDifficulty] = false
+
+GetSpellInfo(227131)
+	[name] = "7.0 Raid World Boss - Bonus Roll Prompt",
+	[rank] = nil,
+	[icon] = 136243,
+	[castTime] = 0,
+	[minRange] = 0,
+	[maxRange] = 50000,
+	[spellId] = 227131
+
 ]]--
 
 local ADDON_NAME, private = ...
 LOIHLOOT_GLOBAL_PRIVATE = private
 local L = private.L
-local db, LOIHLootFrame
+local cfg, db, LOIHLootFrame
 
 local _G = _G
 local Ambiguate = Ambiguate
@@ -89,7 +163,7 @@ local DEFAULT_CHAT_FRAME = DEFAULT_CHAT_FRAME
 local EJ_GetEncounterInfo = EJ_GetEncounterInfo
 local EJ_GetEncounterInfoByIndex = EJ_GetEncounterInfoByIndex
 local EJ_GetInstanceInfo = EJ_GetInstanceInfo
---local EncounterJournalEncounterFrameInfoLootScrollFrame = _G.EncounterJournalEncounterFrameInfoLootScrollFrame -- Throws error if we try to local scope this before loading EJ
+local EncounterJournalEncounterFrameInfoLootScrollFrame = _G.EncounterJournalEncounterFrameInfoLootScrollFrame -- Throws error if we try to local scope this before loading EJ
 local FONT_COLOR_CODE_CLOSE = FONT_COLOR_CODE_CLOSE
 local format = format
 local GAME_VERSION_LABEL = GAME_VERSION_LABEL
@@ -125,12 +199,10 @@ local print = print
 local RED_FONT_COLOR_CODE = RED_FONT_COLOR_CODE
 local ReloadUI = ReloadUI
 local ShowUIPanel = ShowUIPanel
-local string = string
 local strjoin = strjoin
 local strmatch = strmatch
 local strsplit = strsplit
 local strsub = strsub
-local table = table
 local ToggleFrame = ToggleFrame
 local tonumber = tonumber
 local tostring = tostring
@@ -143,6 +215,13 @@ local unpack = unpack
 local UpdateAddOnMemoryUsage = UpdateAddOnMemoryUsage
 local wipe = wipe
 
+local BonusRollFrame = BonusRollFrame
+local LE_SPELL_CONFIRMATION_PROMPT_TYPE_BONUS_ROLL = LE_SPELL_CONFIRMATION_PROMPT_TYPE_BONUS_ROLL
+local GetBonusRollEncounterJournalLinkDifficulty = GetBonusRollEncounterJournalLinkDifficulty
+local GetJournalInfoForSpellConfirmation = GetJournalInfoForSpellConfirmation
+
+local GetSpellConfirmationPromptsInfo = GetSpellConfirmationPromptsInfo
+local ipairs = ipairs
 
 -- Private constants
 private.version = GetAddOnMetadata(ADDON_NAME, "Version")
@@ -150,16 +229,15 @@ private.description = GetAddOnMetadata(ADDON_NAME, "Notes")
 private.LIST_BUTTON_HEIGHT = 23		-- actually 25, but with a y-offset shrinking by 2
 
 --	Local variables
-local DEBUGMODE = false			-- Debug enabled/disabled
 local _commType = "RAID"		-- Channel used for AddonMessages
 local _latestTier = 0			-- InstanceID of the raid tier you want to be open on start (usually the latest), leave empty for all tiers being collapsed on start.
-local _lastSync = "never"		-- Timestamp of the last SyncRequest
+local _lastSync = L.NEVER		-- Timestamp of the last SyncRequest
 local _raidCount = 0			-- Players in raid group
 local _syncReplies = 0			-- SyncReplies from raid group
 local _syncLock = false			-- Is Sync-button disabled?
 local SyncTable = {}			-- Sync-data list
-local _filteredList = {}		-- Filtered list
-local _openHeaders = {}			-- Open headers
+local filteredList = {}		-- Filtered list
+local openHeaders = {}			-- Open headers
 local _syncStatus = ""			-- Status of Sync-data
 local syncedRoster = {}			-- Table to keep track of Synced people
 local currentRoster = {}		-- Helper table to keep track of roster changes
@@ -275,6 +353,9 @@ end
 
 local itemLinks = {}			-- Store itemLinks for fewer function calls
 local bossNames = {}			-- Store raid boss names here for fewer function calls
+local cfgDefaults = {
+	debugmode = false,
+}
 local charDefaults = {
 	main = {},
 	off = {},
@@ -298,7 +379,7 @@ scantip:SetOwner(UIParent, "ANCHOR_NONE")
 ------------------------------------------------------------------------
 
 local function Debug(text, ...)
-	if not DEBUGMODE then return end
+	if not cfg or not cfg.debugmode then return end
 
 	if text then
 		if text:match("%%[dfqsx%d%.]") then
@@ -317,32 +398,6 @@ local function Print(text, ...)
 			DEFAULT_CHAT_FRAME:AddMessage("|cffffcc00".. ADDON_NAME ..":|r " .. strjoin(" ", text, tostringall(...)))
 		end
 	end
-end
-
--- print_r
-local function print_r ( t )
-	local print_r_cache={}
-	local function sub_print_r(t,indent)
-		if (print_r_cache[tostring(t)]) then
-			print(indent.."*"..tostring(t))
-		else
-			print_r_cache[tostring(t)]=true
-			if (type(t)=="table") then
-				for pos,val in pairs(t) do
-					if (type(val)=="table") then
-						print(indent.."["..pos.."] => "..tostring(t).." {")
-						sub_print_r(val,indent..string.rep(" ",string.len(pos)+8))
-						print(indent..string.rep(" ",string.len(pos)+6).."}")
-						else
-						print(indent.."["..pos.."] => "..tostring(val))
-					end
-				end
-			else
-				print(indent..tostring(t))
-			end
-		end
-	end
-	sub_print_r(t," ")
 end
 
 local function initDB(db, defaults) -- This function copies values from one table into another:
@@ -372,6 +427,7 @@ local function _CheckLink(link) -- Return itemID and difficultyID from itemLink
 		return itemLinks[link].id, itemLinks[link].difficulty
 	end
 
+	--item:itemID:enchantID:gemID1:gemID2:gemID3:gemID4:suffixID:uniqueID:linkLevel:specializationID:upgradeTypeID:instanceDifficultyID:numBonusIDs
 	local _, itemID, _, _, _, _, _, _, _, _, _, _, difficultyID = strsplit(":", link)
 	itemID = tonumber(itemID)
 	difficultyID = tonumber(difficultyID)
@@ -389,7 +445,7 @@ end
 
 local function _TimeStamp() -- Generate timestamps
 	local timeTable = date("*t")
-	return string.format("%02d:%02d %d.%d.%d", timeTable.hour, timeTable.min, timeTable.day, timeTable.month, timeTable.year)
+	return format("%02d:%02d %d.%d.%d", timeTable.hour, timeTable.min, timeTable.day, timeTable.month, timeTable.year)
 end
 
 local function _WishlistOnEnter(button, ...) -- EJ Wishlist-buttons OnEnter-script
@@ -411,13 +467,13 @@ local function _WishlistOnEnter(button, ...) -- EJ Wishlist-buttons OnEnter-scri
 	local itemID, difficultyID = _CheckLink(button:GetParent():GetParent().link)
 
 	if db[subTable][itemID] and db[subTable][itemID].difficulty == difficultyID then -- Remove
-		button.tooltipText = string.format("|cffffcc00"..tooltipTitleText.."|r\n%s", L.TOOLTIP_WISHLIST_REM)
+		button.tooltipText = format("|cffffcc00"..tooltipTitleText.."|r\n%s", L.TOOLTIP_WISHLIST_REM)
 	elseif db[subTable][itemID] and db[subTable][itemID].difficulty > difficultyID then -- Downgrade
-		button.tooltipText = string.format("|cffffcc00"..tooltipTitleText.."|r\n%s", L.TOOLTIP_WISHLIST_HIGHER)
+		button.tooltipText = format("|cffffcc00"..tooltipTitleText.."|r\n%s", L.TOOLTIP_WISHLIST_HIGHER)
 	elseif db[subTable][itemID] and db[subTable][itemID].difficulty < difficultyID then -- Upgrade
-		button.tooltipText = string.format("|cffffcc00"..tooltipTitleText.."|r\n%s", L.TOOLTIP_WISHLIST_LOWER)
+		button.tooltipText = format("|cffffcc00"..tooltipTitleText.."|r\n%s", L.TOOLTIP_WISHLIST_LOWER)
 	else -- Add
-		button.tooltipText = string.format("|cffffcc00"..tooltipTitleText.."|r\n%s", L.TOOLTIP_WISHLIST_ADD)
+		button.tooltipText = format("|cffffcc00"..tooltipTitleText.."|r\n%s", L.TOOLTIP_WISHLIST_ADD)
 	end
 
 	GameTooltip:SetOwner(button, "ANCHOR_NONE")
@@ -606,7 +662,11 @@ local function _SyncLine() -- Form the "Last sync"-line for textelement
 		difficultyName = PLAYER_DIFFICULTY6
 	end
 
-	return string.format(L.SYNC_LINE, difficultyName, _lastSync, _syncReplies, math.max(_raidCount, _syncReplies))
+	if _lastSync == L.NEVER then
+		return format(L.SHORT_SYNC_LINE, _lastSync)
+	end
+
+	return format(L.SYNC_LINE, difficultyName, _lastSync, _syncReplies, math.max(_raidCount, _syncReplies))
 end
 
 local function _SendSyncRequest(difficulty) -- Send SyncRequest to raid
@@ -631,7 +691,7 @@ local function _ProcessReply(sender, data) -- Process received SyncReplies
 	else
 		Debug(">>!Found", sender)
 	end
-	private.Frame_SetDescriptionText(string.format("%s\n\n%s", _SyncLine(), L.SENDING_SYNC))
+	private.Frame_SetDescriptionText("%s\n\n%s", _SyncLine(), L.SENDING_SYNC)
 	if data == "" then return end
 
 	local subTable
@@ -658,7 +718,7 @@ local function _ProcessReply(sender, data) -- Process received SyncReplies
 		end
 	end
 
-	if DEBUGMODE then  -- DEBUG
+	if cfg.debugmode then -- DEBUG
 		for k, v in pairs(SyncTable) do
 			for i, d in pairs(v) do
 				if k then
@@ -707,7 +767,7 @@ local function _SyncReply(difficulty) -- Send SyncReply
 	SyncTable = initDB(SyncTable, charDefaults)
 
 	LOIHLootFrame.selectedID = nil -- Deselect previous selection since we are going to change the bottom text anyway
-	private.Frame_SetDescriptionText(string.format("%s\n\n%s", _SyncLine(), L.SENDING_SYNC))
+	private.Frame_SetDescriptionText("%s\n\n%s", _SyncLine(), L.SENDING_SYNC)
 	private.FilterList()
 	private.Frame_UpdateList()
 
@@ -752,7 +812,7 @@ local function _Reset() -- Reset Character's wishlist and SyncTable
 	wipe(db)
 	db = initDB(db, charDefaults)
 
-	_filteredList = {}
+	wipe(filteredList)
 	private.FilterList()
 	private.Frame_UpdateList()
 	LOIHLootFrame.selectedID = nil -- Deselect previous selection since we are going to change the bottom text anyway
@@ -844,6 +904,70 @@ local function HookEJUpdate(self, ...) -- Hook EJ Update for wishlist-buttons
 	end
 end
 
+local function ShowWishlistOnBonusRoll(spellID, difficultyID) -- Show Wishlist on BonusRollFrame
+	local instanceID, encounterID = GetJournalInfoForSpellConfirmation(spellID)
+	instanceID = instanceID or BonusRollFrame.instanceID
+	encounterID = encounterID or BonusRollFrame.encounterID
+	difficultyID = difficultyID or BonusRollFrame.difficultyID or GetBonusRollEncounterJournalLinkDifficulty() or 14 -- difficultyID or fall back to "Normal"
+
+	if not instanceID or not encounterID or not Raids[instanceID] then -- Only show Wishlist for stuff that is listed in the addon
+		Debug("ShowWishlistOnBonusRoll -> Exit", instanceID, encounterID, difficultyID, Raids[instanceID] and "OK" or "NOT")
+
+		LOIHLootFrame.BonusText:SetText("")
+		LOIHLootFrame.BonusText:Hide()
+		return
+	end
+
+	Debug("ShowWishlistOnBonusRoll:", instanceID, encounterID, difficultyID)
+
+	local itemDifficulty
+	if difficultyID == 14 then 	-- Normal Raid
+		itemDifficulty = 3
+	elseif difficultyID == 15 then -- Heroic Raid
+		itemDifficulty = 5
+	elseif difficultyID == 16 then -- Mythic Raid
+		itemDifficulty = 6
+	end
+
+	local mainCount, offCount, vanityCount = 0, 0, 0
+	for subTable, tableData in pairs(db) do
+		for itemID, itemData in pairs(tableData) do
+			if itemData and itemData.difficulty <= itemDifficulty then
+				if itemData.encounter == encounterID then
+					Debug("!!!", itemID, itemData.encounter, itemData.difficulty, subTable)
+					if subTable == "main" then
+						mainCount = mainCount + 1
+					elseif subTable == "off" then
+						offCount = offCount + 1
+					elseif subTable == "vanity" then
+						vanityCount = vanityCount + 1
+					end
+				end
+			end
+		end
+	end
+
+	local mainStr, offStr, vanityStr
+	if mainCount > 0 then
+		mainStr = GREEN_FONT_COLOR_CODE .. mainCount .. FONT_COLOR_CODE_CLOSE
+	else
+		mainStr = tostring(mainCount)
+	end
+	if offCount > 0 then
+		offStr = GREEN_FONT_COLOR_CODE .. offCount .. FONT_COLOR_CODE_CLOSE
+	else
+		offStr = tostring(offCount)
+	end
+	if vanityCount > 0 then
+		vanityStr = GREEN_FONT_COLOR_CODE .. vanityCount .. FONT_COLOR_CODE_CLOSE
+	else
+		vanityStr = tostring(vanityCount)
+	end
+
+	LOIHLootFrame.BonusText:SetFormattedText("%s\n%s / %s / %s", NORMAL_FONT_COLOR_CODE .. L.WISHLIST .. FONT_COLOR_CODE_CLOSE, mainStr, offStr, vanityStr)
+	LOIHLootFrame.BonusText:Show()
+end
+
 ------------------------------------------------------------------------
 --	Initialization functions
 ------------------------------------------------------------------------
@@ -860,7 +984,9 @@ function private:ADDON_LOADED(addon)
 			EncounterJournalEncounterFrameInfoLootScrollFrame:HookScript("OnUpdate", HookEJUpdate)
 		end
 
+		LOIHLootDB = initDB(LOIHLootDB, cfgDefaults)
 		LOIHLootCharDB = initDB(LOIHLootCharDB, charDefaults)
+		cfg = LOIHLootDB
 		db = LOIHLootCharDB
 
 		if IsLoggedIn() then
@@ -890,6 +1016,7 @@ function private:PLAYER_LOGIN()
 	-- Clean up list on login.
 	_CheckGear()
 	_CheckBags()
+	private.GROUP_ROSTER_UPDATE()
 
 	-- Register prefix and  events
 	C_ChatInfo.RegisterAddonMessagePrefix(ADDON_NAME)
@@ -897,11 +1024,13 @@ function private:PLAYER_LOGIN()
 	LOIHLootFrame:RegisterEvent("ITEM_PUSH")
 	LOIHLootFrame:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
 	LOIHLootFrame:RegisterEvent("GROUP_ROSTER_UPDATE")
+	LOIHLootFrame:RegisterEvent("SPELL_CONFIRMATION_PROMPT") -- BonusRoll
+	LOIHLootFrame:RegisterEvent("PLAYER_ENTERING_WORLD") -- BonusRoll
 end
 
 function private:CHAT_MSG_ADDON(prefix, message, channel, sender)
 	if channel ~= _commType or prefix ~= ADDON_NAME then return end
-	Debug("> CHAT_MSG_ADDON <")
+	Debug("CHAT_MSG_ADDON")
 
 	sender = Ambiguate(sender, "none")
 
@@ -929,46 +1058,102 @@ function private:PLAYER_EQUIPMENT_CHANGED()
 	end
 end
 
-function private:GROUP_ROSTER_UPDATE()
-	private.Frame_UpdateButtons()
+do -- GROUP_ROSTER_UPDATE
+	local throttling
 
-	local changed = false
-	for i = 1, GetNumGroupMembers() do
-		local name = UnitName(GetRaidRosterInfo(i))
-		currentRoster[name] = true
-
-		if not syncedRoster[name] then
-			syncedRoster[name] = 0 -- Not synced / new to the group
-			changed = true
+	local function DelayedUpdate()
+		Debug("GROUP_ROSTER_UPDATE")
+		if cfg.debugmode then
+			if IsInRaid() then
+				_commType = "RAID"
+			else
+				_commType = "GUILD"
+				local name = UnitName("player")
+				syncedRoster[name] = syncedRoster[name] or 0
+				currentRoster[name] = true
+			end
 		end
-	end
 
-	for k in pairs(syncedRoster) do
-		if not currentRoster[k] then
-			if syncedRoster[k] > 0 then
+		private.Frame_UpdateButtons()
+
+		local cC, sC = 0, 0
+		local changed = false
+		for i = 1, GetNumGroupMembers() do
+			local name = GetRaidRosterInfo(i)
+			currentRoster[name] = true
+			cC = cC + 1
+
+			if not syncedRoster[name] then
+				syncedRoster[name] = 0 -- Not synced / new to the group
 				changed = true
 			end
-			syncedRoster[k] = nil
+		end
+
+		for k in pairs(syncedRoster) do
+			sC = sC + 1
+			if not currentRoster[k] then
+				if syncedRoster[k] > 0 then
+					changed = true
+				end
+				syncedRoster[k] = nil
+				sC = sC - 1
+			end
+		end
+		wipe(currentRoster)
+
+		Debug("> Current:", cC, " - Synced:", sC)
+
+		if changed then -- Roster changed since last sync
+			_syncStatus = ORANGE_FONT_COLOR_CODE .. L.SYNCSTATUS_INCOMPLETE .. FONT_COLOR_CODE_CLOSE
+		elseif not IsInRaid() then -- Solo, no sync
+			_syncStatus = RED_FONT_COLOR_CODE .. L.SYNCSTATUS_MISSING .. FONT_COLOR_CODE_CLOSE
+		end
+		LOIHLootFrame.SyncText:SetText(_syncStatus)
+	end
+
+	local function ThrottleUpdate() -- Throttle GROUP_ROSTER_UPDATE to once per sec at max
+		if not throttling then
+			throttling = true
+			C_Timer.After(1, DelayedUpdate)
 		end
 	end
-	wipe(currentRoster)
 
-	if changed then -- Roster changed since last sync
-		_syncStatus = ORANGE_FONT_COLOR_CODE .. L.SYNCSTATUS_INCOMPLETE .. FONT_COLOR_CODE_CLOSE
-	elseif not IsInRaid() then -- Solo, no sync
-		_syncStatus = RED_FONT_COLOR_CODE .. L.SYNCSTATUS_MISSING .. FONT_COLOR_CODE_CLOSE
-	end
-	LOIHLootFrame.SyncText:SetText(_syncStatus)
+	private.GROUP_ROSTER_UPDATE = ThrottleUpdate
 end
 
+function private:SPELL_CONFIRMATION_PROMPT(spellID, confirmType, ...) -- Add Wishlist to the BonusRollFrame
+	if confirmType ~= LE_SPELL_CONFIRMATION_PROMPT_TYPE_BONUS_ROLL then return end -- Check if this is BonusRoll, value == 1
+	local text, duration, currencyID, currencyCost, difficultyID = ...
+	Debug("SPELL_CONFIRMATION_PROMT", spellID, difficultyID)
+
+	ShowWishlistOnBonusRoll(spellID, difficultyID)
+end
+
+function private:PLAYER_ENTERING_WORLD() -- From UIParent.lua, check if there are BonusRolls going on
+	local spellConfirmations = GetSpellConfirmationPromptsInfo()
+
+	for i, spellConfirmation in ipairs(spellConfirmations) do
+		if spellConfirmation.spellID then
+			if spellConfirmation.confirmType == LE_SPELL_CONFIRMATION_PROMPT_TYPE_BONUS_ROLL then
+				--spellConfirmation.spellID
+				--spellConfirmation.text
+				--spellConfirmation.duration
+				--spellConfirmation.currencyID
+				--spellConfirmation.currencyCost
+				Debug("SPELL_CONFIRMATION_PROMT on LOGIN", spellConfirmation.spellID)
+				ShowWishlistOnBonusRoll(spellConfirmation.spellID)
+			end
+		end
+	end
+end
 
 ------------------------------------------------------------------------
 --	LOIHLootFrame UI functions
 ------------------------------------------------------------------------
 
-function private.Frame_SetDescriptionText(text) -- Set text to bottom element
+function private.Frame_SetDescriptionText(pattern, ...) -- Set text to bottom element
 	LOIHLootFrame.TextScrollFrame:Show()
-	LOIHLootFrame.TextBox:SetText(text)
+	LOIHLootFrame.TextBox:SetFormattedText(pattern, ...)
 	LOIHLootFrame.TextScrollFrame.ScrollBar:SetValue(0)
 	LOIHLootFrame.TextScrollFrame:UpdateScrollChildRect()
 end
@@ -984,17 +1169,17 @@ end
 function private.FilterList() -- Filter list items
 	Debug("FilterList")
 
-	wipe(_filteredList)
+	wipe(filteredList)
 	local skipping
 
 	for instanceID, bossIDs in pairs(Raids) do
 		local instanceName = EJ_GetInstanceInfo(instanceID)
-		skipping = not _openHeaders[instanceName]
-		table.insert(_filteredList, instanceName)
+		skipping = not openHeaders[instanceName]
+		filteredList[#filteredList + 1] = instanceName
 
 		if not skipping then
 			for _, encounterID in pairs(bossIDs) do
-				table.insert(_filteredList, encounterID)
+				filteredList[#filteredList + 1] = encounterID
 			end
 		end
 	end
@@ -1011,11 +1196,11 @@ function private.Frame_UpdateList(self, ...) -- Update list
 		local index = i + offset
 		local button = buttons[i]
 		button:Hide()
-		if index <= #_filteredList then
+		if index <= #filteredList then
 			button:SetID(index)
-			if type(_filteredList[index]) == "string" then
-				button.header.text:SetText(_filteredList[index])
-				if _openHeaders[_filteredList[index]] then
+			if type(filteredList[index]) == "string" then
+				button.header.text:SetText(filteredList[index])
+				if openHeaders[filteredList[index]] then
 					button.header.expandIcon:SetTexCoord(0.5625, 1, 0, 0.4375) -- minus sign
 					button.header.main:SetText(L.SHORT_MAINSPEC)
 					button.header.off:SetText(L.SHORT_OFFSPEC)
@@ -1034,7 +1219,7 @@ function private.Frame_UpdateList(self, ...) -- Update list
 				local mR, mG, mB = normalFontColor[1], normalFontColor[2], normalFontColor[3]
 				local oR, oG, oB = normalFontColor[1], normalFontColor[2], normalFontColor[3]
 				if SyncTable.main then
-					mainCount = SyncTable.main[_filteredList[index]] or 0
+					mainCount = SyncTable.main[filteredList[index]] or 0
 					mainPercent = _syncReplies > 0 and math.floor(mainCount / _syncReplies * 100 + .5) or 0
 					--mainPercent = math.random(0, 100) -- Debug
 					mR = (mainPercent * highPercentColor[1] + (100 - mainPercent) * normalFontColor[1]) / 100
@@ -1042,7 +1227,7 @@ function private.Frame_UpdateList(self, ...) -- Update list
 					mB = (mainPercent * highPercentColor[3] + (100 - mainPercent) * normalFontColor[3]) / 100
 				end
 				if SyncTable.off then
-					offCount = SyncTable.off[_filteredList[index]] or 0
+					offCount = SyncTable.off[filteredList[index]] or 0
 					offPercent = _syncReplies > 0 and math.floor(offCount / _syncReplies * 100 + .5) or 0
 					--offPercent = math.random(0, 100) -- Debug
 					oR = (offPercent * highPercentColor[1] + (100 - offPercent) * normalFontColor[1]) / 100
@@ -1050,20 +1235,20 @@ function private.Frame_UpdateList(self, ...) -- Update list
 					oB = (offPercent * highPercentColor[3] + (100 - offPercent) * normalFontColor[3]) / 100
 				end
 				if SyncTable.vanity then
-					vanityCount = SyncTable.vanity[_filteredList[index]] or 0
+					vanityCount = SyncTable.vanity[filteredList[index]] or 0
 					vanityPercent = _syncReplies > 0 and math.floor(vanityCount / _syncReplies * 100 + .5) or 0
 				end
 				local totalCount = _syncReplies or 0
 				local mainColorString = _RGBToHex(255 * mR, 255 * mG, 255 * mB)
 				local offColorString = _RGBToHex(255 * oR, 255 * oG, 255 * oB)
-				button.detail.text:SetText(_GetBossName(_filteredList[index]))
+				button.detail.text:SetText(_GetBossName(filteredList[index]))
 				button.detail.main:SetFormattedText("|cff%s%d/%d\n(%d%%)|r", mainColorString, mainCount, totalCount, mainPercent)
 				button.detail.off:SetFormattedText("|cff%s%d/%d\n(%d%%)|r", offColorString, offCount, totalCount, offPercent)
 				button.detail.vanity:SetFormattedText("%d/%d\n(%d%%)", vanityPercent, totalCount, vanityPercent)
 				button.header:Hide()
 				button.detail:Show()
 
-				if LOIHLootFrame.selectedID == _filteredList[index] then
+				if LOIHLootFrame.selectedID == filteredList[index] then
 					button.detail:LockHighlight()
 				else
 					button.detail:UnlockHighlight()
@@ -1073,21 +1258,21 @@ function private.Frame_UpdateList(self, ...) -- Update list
 		end
 	end
 
-	HybridScrollFrame_Update(scrollFrame, private.LIST_BUTTON_HEIGHT*#_filteredList, private.LIST_BUTTON_HEIGHT)
+	HybridScrollFrame_Update(scrollFrame, (private.LIST_BUTTON_HEIGHT * #filteredList), private.LIST_BUTTON_HEIGHT)
 end
 
 function private.HeaderOnClick(self) -- Click Header on list
-	Debug("HeaderOnClick", self:GetID(), _filteredList[self:GetID()])
+	Debug("HeaderOnClick", self:GetID(), filteredList[self:GetID()])
 
-	_openHeaders[_filteredList[self:GetID()]] = not _openHeaders[_filteredList[self:GetID()]]
+	openHeaders[filteredList[self:GetID()]] = not openHeaders[filteredList[self:GetID()]]
 	private.FilterList()
 	private.Frame_UpdateList()
 end	
 
 function private.ButtonOnClick(self) -- Click Boss' name on list
-	Debug("ButtonOnClick", self:GetID(), _filteredList[self:GetID()])
+	Debug("ButtonOnClick", self:GetID(), filteredList[self:GetID()])
 
-	local index = _filteredList[self:GetID()]
+	local index = filteredList[self:GetID()]
 	if LOIHLootFrame.selectedID ~= index then
 		Debug("- selected ID changed:", index)
 
@@ -1108,12 +1293,11 @@ function private.ButtonOnClick(self) -- Click Boss' name on list
 			vanityPercent = _syncReplies > 0 and math.floor(vanityCount / _syncReplies * 100 + .5) or 0
 		end
 
-		local mainText = string.format("%s:\n     %d / %d (%d%%)", L.LONG_MAINSPEC, mainCount, _syncReplies, mainPercent)
-		local offText = string.format("%s:\n     %d / %d (%d%%)", L.LONG_OFFSPEC, offCount, _syncReplies, offPercent)
-		local vanityText = string.format("%s:\n     %d / %d (%d%%)", L.LONG_VANITY, vanityCount, _syncReplies, vanityPercent)
-		local string = string.format("%s\n\n%s%s%s\n%s\n%s\n%s", _SyncLine(), HIGHLIGHT_FONT_COLOR_CODE, bossName, FONT_COLOR_CODE_CLOSE, mainText, offText, vanityText)
+		local mainText = format("%s:\n     %d / %d (%d%%)", L.LONG_MAINSPEC, mainCount, _syncReplies, mainPercent)
+		local offText = format("%s:\n     %d / %d (%d%%)", L.LONG_OFFSPEC, offCount, _syncReplies, offPercent)
+		local vanityText = format("%s:\n     %d / %d (%d%%)", L.LONG_VANITY, vanityCount, _syncReplies, vanityPercent)
 
-		private.Frame_SetDescriptionText(string)
+		private.Frame_SetDescriptionText("%s\n\n%s%s%s\n%s\n%s\n%s", _SyncLine(), HIGHLIGHT_FONT_COLOR_CODE, bossName, FONT_COLOR_CODE_CLOSE, mainText, offText, vanityText)
 
 		LOIHLootFrame.selectedID = index
 		private.Frame_UpdateList()
@@ -1127,7 +1311,7 @@ function private.Frame_SyncButtonOnClick(self) -- Send SyncRequest
 		private.Frame_SetDescriptionText(_SyncLine())
 	end
 
-	private.Frame_SetDescriptionText(string.format("%s\n\n%s", _SyncLine(), L.SENDING_SYNC))
+	private.Frame_SetDescriptionText("%s\n\n%s", _SyncLine(), L.SENDING_SYNC)
 	_syncLock = true
 	LOIHLootFrame.SyncButton:Disable()
 	C_Timer.After(15, EnableButton)
@@ -1197,7 +1381,7 @@ function private.OnLoad(self)
 
 	-- Make sure the newest raid tier is open
 	if _latestTier then
-		_openHeaders[EJ_GetInstanceInfo(_latestTier)] = true
+		openHeaders[EJ_GetInstanceInfo(_latestTier)] = true
 	end
 
 	-- Fill HybridScrollFrame
@@ -1237,16 +1421,19 @@ local SlashHandlers = {
 		Print(L.PRT_STATUS, ADDON_NAME, GetAddOnMemoryUsage(ADDON_NAME) + 0.5)
 	end,
 	[L.CMD_DEBUGON] = function()
-		DEBUGMODE = true
-		_commType = "GUILD"
+		cfg.debugmode = true
+		if not IsInRaid() then
+			_commType = "GUILD"
+			LOIHLootFrame.SyncButton:Enable()
+		end
 		local name = UnitName("player")
-		syncedRoster[name] = 0
-		LOIHLootFrame.SyncButton:Enable()
+		syncedRoster[name] = syncedRoster[name] or 0
 		Print(L.PRT_DEBUG_TRUE, ADDON_NAME)
 	end,
 	[L.CMD_DEBUGOFF] = function()
-		DEBUGMODE = false
+		cfg.debugmode = false
 		_commType = "RAID"
+		private.Frame_UpdateButtons()
 		Print(L.PRT_DEBUG_FALSE, ADDON_NAME)
 	end,
 	[L.CMD_DUMP] = function(params) -- 'bossdump' as default, this is hidden command
@@ -1269,10 +1456,8 @@ local SlashHandlers = {
 
 		Print("},")
 	end,
-	["synctest"] = function() -- Test Sync
-		_SendSyncRequest(6)
-	end,
 	["roster"] = function() -- Check SyncStatus from roster
+		if not cfg.debugmode then return end
 		local testNoSync, testNoReply, testGaveReply, testError = 0, 0, 0, 0
 
 		for _, v in pairs(syncedRoster) do
@@ -1318,7 +1503,6 @@ local SlashHandlers = {
 		local itemSets = C_LootJournal.GetFilteredItemSets()
 		local tierCount = 0
 
-		--print_r(itemSets)
 		--Print("itemSets:", #itemSets)
 		for i = 1, #itemSets do
 			local setName = itemSets[i].name
