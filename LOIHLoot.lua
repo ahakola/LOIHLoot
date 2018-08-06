@@ -72,21 +72,21 @@ For 8.0 Personal loot is the ONLY loot method for groups
 MEMO for future features:
 
 BOSS_KILL
-	1951
-	Flotsam
+	1951 -- encounterID (DungeonEncounterID)
+	Flotsam -- name
 
 SPELL_CONFIRMATION_PROMT
 	227131 -- spellID
-	1
-	""
-	180 -- timeout?
+	1 -- confirmType
+	"" -- text
+	180 -- timeout
 	1273 -- currencyID
-	1
+	1 -- currencyCost
 	14 -- difficultyID
 
 SPELL_CONFIRMATION_TIMEOUT
-	227131
-	1
+	227131 -- spellID
+	1 -- confirmType
 
 BonusRollFrame = {
 	currencyID = 1273,
@@ -152,6 +152,7 @@ local cfg, db, LOIHLootFrame
 
 local _G = _G
 local Ambiguate = Ambiguate
+local BonusRollFrame = BonusRollFrame
 local C_ChatInfo = C_ChatInfo
 local C_GuildInfo = C_GuildInfo
 local C_Timer = C_Timer
@@ -163,31 +164,37 @@ local DEFAULT_CHAT_FRAME = DEFAULT_CHAT_FRAME
 local EJ_GetEncounterInfo = EJ_GetEncounterInfo
 local EJ_GetEncounterInfoByIndex = EJ_GetEncounterInfoByIndex
 local EJ_GetInstanceInfo = EJ_GetInstanceInfo
-local EncounterJournalEncounterFrameInfoLootScrollFrame = _G.EncounterJournalEncounterFrameInfoLootScrollFrame -- Throws error if we try to local scope this before loading EJ
+--local EncounterJournalEncounterFrameInfoLootScrollFrame = _G.EncounterJournalEncounterFrameInfoLootScrollFrame -- Throws error if we try to local scope this before loading EJ
 local FONT_COLOR_CODE_CLOSE = FONT_COLOR_CODE_CLOSE
 local format = format
 local GAME_VERSION_LABEL = GAME_VERSION_LABEL
 local GameTooltip = GameTooltip
 local GetAddOnMemoryUsage = GetAddOnMemoryUsage
 local GetAddOnMetadata = GetAddOnMetadata
+local GetBonusRollEncounterJournalLinkDifficulty = GetBonusRollEncounterJournalLinkDifficulty
 local GetClassInfo = GetClassInfo
 local GetContainerItemLink = GetContainerItemLink
 local GetContainerNumSlots = GetContainerNumSlots
 local GetInventoryItemLink = GetInventoryItemLink
 local GetItemInfo = GetItemInfo
+local GetJournalInfoForSpellConfirmation = GetJournalInfoForSpellConfirmation
 local GetNumGroupMembers = GetNumGroupMembers
 local GetRaidDifficultyID = GetRaidDifficultyID
 local GetRaidRosterInfo = GetRaidRosterInfo
+local GetSpellConfirmationPromptsInfo = GetSpellConfirmationPromptsInfo
 local GREEN_FONT_COLOR_CODE = GREEN_FONT_COLOR_CODE
 local gsub = gsub
 local HideUIPanel = HideUIPanel
 local HIGHLIGHT_FONT_COLOR_CODE = HIGHLIGHT_FONT_COLOR_CODE
 local HybridScrollFrame_GetOffset = HybridScrollFrame_GetOffset
 local HybridScrollFrame_Update = HybridScrollFrame_Update
+local ipairs = ipairs
 local IsAddOnLoaded = IsAddOnLoaded
 local IsInRaid = IsInRaid
 local IsLoggedIn = IsLoggedIn
+local LE_SPELL_CONFIRMATION_PROMPT_TYPE_BONUS_ROLL = LE_SPELL_CONFIRMATION_PROMPT_TYPE_BONUS_ROLL
 local math = math
+local MAX_RAID_MEMBERS = MAX_RAID_MEMBERS
 local NORMAL_FONT_COLOR_CODE = NORMAL_FONT_COLOR_CODE
 local NUM_BAG_SLOTS = NUM_BAG_SLOTS
 local ORANGE_FONT_COLOR_CODE = ORANGE_FONT_COLOR_CODE
@@ -215,14 +222,6 @@ local unpack = unpack
 local UpdateAddOnMemoryUsage = UpdateAddOnMemoryUsage
 local wipe = wipe
 
-local BonusRollFrame = BonusRollFrame
-local LE_SPELL_CONFIRMATION_PROMPT_TYPE_BONUS_ROLL = LE_SPELL_CONFIRMATION_PROMPT_TYPE_BONUS_ROLL
-local GetBonusRollEncounterJournalLinkDifficulty = GetBonusRollEncounterJournalLinkDifficulty
-local GetJournalInfoForSpellConfirmation = GetJournalInfoForSpellConfirmation
-
-local GetSpellConfirmationPromptsInfo = GetSpellConfirmationPromptsInfo
-local ipairs = ipairs
-
 -- Private constants
 private.version = GetAddOnMetadata(ADDON_NAME, "Version")
 private.description = GetAddOnMetadata(ADDON_NAME, "Notes")
@@ -239,7 +238,7 @@ local SyncTable = {}			-- Sync-data list
 local filteredList = {}		-- Filtered list
 local openHeaders = {}			-- Open headers
 local _syncStatus = ""			-- Status of Sync-data
-local syncedRoster = {}			-- Table to keep track of Synced people
+local syncedRoster = {}			-- Table to keep track of Synced people, 0 = unsynced, 1 = no reply, 2 = synced
 local currentRoster = {}		-- Helper table to keep track of roster changes
 local Raids = {					-- RaidIDs and BossIDs
 	-- BfA
@@ -674,7 +673,7 @@ local function _SendSyncRequest(difficulty) -- Send SyncRequest to raid
 	if not difficulty then return end
 
 	for k in pairs(syncedRoster) do
-		syncedRoster[k] = 1 -- Here at the time of sync
+		syncedRoster[k] = 1 -- Kilroy was here at the time of sync
 	end
 
 	local err = C_ChatInfo.SendAddonMessage(ADDON_NAME, "SyncRequest-"..difficulty, _commType)
@@ -1062,6 +1061,7 @@ do -- GROUP_ROSTER_UPDATE
 	local throttling
 
 	local function DelayedUpdate()
+		throttling = nil
 		Debug("GROUP_ROSTER_UPDATE")
 		if cfg.debugmode then
 			if IsInRaid() then
@@ -1079,20 +1079,25 @@ do -- GROUP_ROSTER_UPDATE
 		local cC, sC = 0, 0
 		local changed = false
 		for i = 1, GetNumGroupMembers() do
-			local name = GetRaidRosterInfo(i)
-			currentRoster[name] = true
-			cC = cC + 1
+			local name, _, _, _, _, _, _, online = GetRaidRosterInfo(i)
+			if name and online then -- Exists and is online
+				Debug("> Online", name)
+				currentRoster[name] = true
+				cC = cC + 1
 
-			if not syncedRoster[name] then
-				syncedRoster[name] = 0 -- Not synced / new to the group
-				changed = true
+				if not syncedRoster[name] then
+					syncedRoster[name] = 0 -- Not synced (new to the group)
+					changed = true
+				end
+			elseif name then
+				Debug("> Offline", name)
 			end
 		end
 
 		for k in pairs(syncedRoster) do
 			sC = sC + 1
 			if not currentRoster[k] then
-				if syncedRoster[k] > 0 then
+				if syncedRoster[k] == 2 then -- Removed player was synced with reply
 					changed = true
 				end
 				syncedRoster[k] = nil
@@ -1101,20 +1106,20 @@ do -- GROUP_ROSTER_UPDATE
 		end
 		wipe(currentRoster)
 
-		Debug("> Current:", cC, " - Synced:", sC)
+		Debug("> Current:", cC, " - Synced:", sC, " - Num:", GetNumGroupMembers())
 
-		if changed then -- Roster changed since last sync
-			_syncStatus = ORANGE_FONT_COLOR_CODE .. L.SYNCSTATUS_INCOMPLETE .. FONT_COLOR_CODE_CLOSE
-		elseif not IsInRaid() then -- Solo, no sync
+		if not IsInRaid() then -- Solo, no sync
 			_syncStatus = RED_FONT_COLOR_CODE .. L.SYNCSTATUS_MISSING .. FONT_COLOR_CODE_CLOSE
+		elseif changed then -- Roster changed since last sync
+			_syncStatus = ORANGE_FONT_COLOR_CODE .. L.SYNCSTATUS_INCOMPLETE .. FONT_COLOR_CODE_CLOSE
 		end
 		LOIHLootFrame.SyncText:SetText(_syncStatus)
 	end
 
-	local function ThrottleUpdate() -- Throttle GROUP_ROSTER_UPDATE to once per sec at max
+	local function ThrottleUpdate() -- Throttle GROUP_ROSTER_UPDATE to 1/1sec or lower
 		if not throttling then
 			throttling = true
-			C_Timer.After(1, DelayedUpdate)
+			C_Timer.After(0.5, DelayedUpdate)
 		end
 	end
 
@@ -1133,13 +1138,14 @@ function private:PLAYER_ENTERING_WORLD() -- From UIParent.lua, check if there ar
 	local spellConfirmations = GetSpellConfirmationPromptsInfo()
 
 	for i, spellConfirmation in ipairs(spellConfirmations) do
+		--spellConfirmation.spellID
+		--spellConfirmation.confirmType
+		--spellConfirmation.text
+		--spellConfirmation.duration
+		--spellConfirmation.currencyID
+		--spellConfirmation.currencyCost
 		if spellConfirmation.spellID then
 			if spellConfirmation.confirmType == LE_SPELL_CONFIRMATION_PROMPT_TYPE_BONUS_ROLL then
-				--spellConfirmation.spellID
-				--spellConfirmation.text
-				--spellConfirmation.duration
-				--spellConfirmation.currencyID
-				--spellConfirmation.currencyCost
 				Debug("SPELL_CONFIRMATION_PROMT on LOGIN", spellConfirmation.spellID)
 				ShowWishlistOnBonusRoll(spellConfirmation.spellID)
 			end
@@ -1457,7 +1463,6 @@ local SlashHandlers = {
 		Print("},")
 	end,
 	["roster"] = function() -- Check SyncStatus from roster
-		if not cfg.debugmode then return end
 		local testNoSync, testNoReply, testGaveReply, testError = 0, 0, 0, 0
 
 		for _, v in pairs(syncedRoster) do
@@ -1472,7 +1477,7 @@ local SlashHandlers = {
 			end
 		end
 
-		Print("Roster\n          - 0:", testNoSync, "\n          - 1:", testNoReply, "\n          - 2:", testGaveReply, "\n          - E:", testError)
+		Print("Roster\n          - 0:", testNoSync, "\n          - 1:", testNoReply, "\n          - 2:", testGaveReply, "\n          - E:", testError, "\n          - T:", GetNumGroupMembers())
 	end,
 	--[[["tiers"] = function() -- Extract setIDs of Tier-sets
 		local _getClass = function(itemID)
