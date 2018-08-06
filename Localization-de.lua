@@ -70,11 +70,11 @@ L["UNKNOWN"] = "Unbekannt"
 --[[ L["WISHLIST"] = "Wishlist"--]] 
 
 L["HELP_TEXT"] = {
-	"Benutze /loihloot oder /lloot mit den folgenden Befehlen:"
-	"   " .. L.CMD_SHOW    .. "– Zeigt das LOIHLoot-Fenster"
-	"   " .. L.CMD_HIDE    .. "– Versteckt das LOIHLoot-Fenster"
-	"   " .. L.CMD_RESET    .. "– Setzt die aktuelle Wunschliste des Charakters zurück"
-	"   " .. L.CMD_STATUS  .. "– Berichtet den Status von LOIHLoot"
-	"   " .. L.CMD_HELP .. "– Zeigt diese Hilfenachricht"
-	"Benutze den Slash-Befehl ohne zusätzliche Befehle, um das LOIHLoot-Fenster zu zeigen."
+	"Benutze /loihloot oder /lloot mit den folgenden Befehlen:",
+	"   " .. L.CMD_SHOW    .. "– Zeigt das LOIHLoot-Fenster",
+	"   " .. L.CMD_HIDE    .. "– Versteckt das LOIHLoot-Fenster",
+	"   " .. L.CMD_RESET    .. "– Setzt die aktuelle Wunschliste des Charakters zurück",
+	"   " .. L.CMD_STATUS  .. "– Berichtet den Status von LOIHLoot",
+	"   " .. L.CMD_HELP .. "– Zeigt diese Hilfenachricht",
+	"Benutze den Slash-Befehl ohne zusätzliche Befehle, um das LOIHLoot-Fenster zu zeigen.",
 }

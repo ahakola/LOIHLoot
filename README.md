@@ -67,7 +67,7 @@ Your Curse-account can be used to login at Curseforge.
 ##### For 8.0 Personal loot is the ONLY loot method for groups
 > Said by Ion Hazzikostas (aka "Watcher") in BfA Q&A
 
-#### Translations
+### Translations
 
 German (deDE) by pas06
 
