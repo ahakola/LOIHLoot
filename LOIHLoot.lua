@@ -240,6 +240,7 @@ local openHeaders = {}			-- Open headers
 local _syncStatus = ""			-- Status of Sync-data
 local syncedRoster = {}			-- Table to keep track of Synced people, 0 = unsynced, 1 = no reply, 2 = synced
 local currentRoster = {}		-- Helper table to keep track of roster changes
+local normalDifficultyID = 14	-- difficultyID for normal because LFR is higher than other difficulties
 local Raids = {					-- RaidIDs and BossIDs
 	-- BfA
 		[1031] = { -- Uldir 
@@ -585,10 +586,20 @@ do -- _CheckGear() - Checks equipment for items on wishlist
 				local itemID, difficultyID = _CheckLink(GetInventoryItemLink("Player", i))
 
 				for subTable in pairs(db) do
-					if db[subTable][itemID] and db[subTable][itemID].difficulty <= difficultyID then -- Item found, remove from wishlist
-						Debug("Remove by Equiped:", itemID, difficultyID, subTable)
+					if db[subTable][itemID] and db[subTable][itemID].difficulty <= difficultyID then -- Item found, upgrade or remove from wishlist
+						if difficultyID > 16 then -- LFR (17) or something went wrong
+							Debug("Upgraded by Equiped:", itemID, difficultyID, normalDifficultyID, subTable)
 
-						db[subTable][itemID] = nil
+							db[subTable][itemID].difficulty = normalDifficultyID
+						elseif difficultyID < 16 then -- Normal (14), Heroic (15) or something went wrong
+							Debug("Upgraded by Equiped:", itemID, difficultyID, difficultyID + 1, subTable)
+
+							db[subTable][itemID].difficulty = difficultyID + 1
+						else -- Mythic (16)
+							Debug("Remove by Equiped:", itemID, difficultyID, subTable)
+
+							db[subTable][itemID] = nil
+						end
 					end
 				end
 			end
@@ -617,10 +628,20 @@ do -- _CheckBags() - Checks inventory for items on wishlist
 				local itemID, difficultyID = _CheckLink(GetContainerItemLink(bag, slot))
 
 				for subTable in pairs(db) do
-					if db[subTable][itemID] and db[subTable][itemID].difficulty <= difficultyID then -- Item found, remove from wishlist
-						Debug("Remove by Bags:", itemID, difficultyID, subTable)
+					if db[subTable][itemID] and db[subTable][itemID].difficulty <= difficultyID then -- Item found, upgrade or remove from wishlist
+						if difficultyID > 16 then -- LFR (17) or something went wrong
+							Debug("Upgraded by Bags:", itemID, difficultyID, normalDifficultyID, subTable)
 
-						db[itemID] = nil
+							db[subTable][itemID].difficulty = normalDifficultyID
+						elseif difficultyID < 16 then -- Normal (14), Heroic (15) or something went wrong
+							Debug("Upgraded by Bags:", itemID, difficultyID, difficultyID + 1, subTable)
+
+							db[subTable][itemID].difficulty = difficultyID + 1
+						else -- Mythic (16)
+							Debug("Remove by Bags:", itemID, difficultyID, subTable)
+
+							db[subTable][itemID] = nil
+						end
 					end
 				end
 			end
@@ -1040,6 +1061,14 @@ function private:CHAT_MSG_ADDON(prefix, message, channel, sender)
 	elseif command == "SyncReply" then
 		Debug("< Received SyncReply:", sender, data)
 		_ProcessReply(sender, data)
+	elseif command == "VersionRequest" then
+		Debug("< Received VersionRequest:", sender, data)
+
+		local err = C_ChatInfo.SendAddonMessage(ADDON_NAME, "VersionReply-"..(private.version or ""), _commType)
+
+		Debug(">>> Success:", err)
+	elseif command == "VersionReply" then
+		Debug("< Received VersionReply:", sender, data)
 	end
 end
 
@@ -1478,6 +1507,11 @@ local SlashHandlers = {
 		end
 
 		Print("Roster\n          - 0:", testNoSync, "\n          - 1:", testNoReply, "\n          - 2:", testGaveReply, "\n          - E:", testError, "\n          - T:", GetNumGroupMembers())
+	end,
+	["version"] = function() -- Check Versions of group members
+		local err = C_ChatInfo.SendAddonMessage(ADDON_NAME, "VersionRequest-"..(private.version or ""), _commType)
+
+		Debug(">>> Success:", err)
 	end,
 	--[[["tiers"] = function() -- Extract setIDs of Tier-sets
 		local _getClass = function(itemID)
