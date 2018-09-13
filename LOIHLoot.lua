@@ -795,7 +795,7 @@ local function _SyncReply(difficulty) -- Send SyncReply
 
 	for subTable, tableData in pairs(db) do
 		for itemID, itemData in pairs(tableData) do
-			Debug(">>>", subTable, itemID, itemData.difficulty)
+			Debug(">>>", subTable, itemID, type(itemData) == "table" and itemData.difficulty or type(itemData))
 			if itemData and itemData.difficulty <= tonumber(difficulty) then
 				Debug("+", subTable, itemData.encounter, itemData.difficulty)
 				if subTable == "main" then
@@ -1010,6 +1010,20 @@ function private:ADDON_LOADED(addon)
 		LOIHLootCharDB = initDB(LOIHLootCharDB, charDefaults)
 		cfg = LOIHLootDB
 		db = LOIHLootCharDB
+
+		for k, v in pairs(db) do -- Check data in CharDB
+			if not charDefaults[k] then -- Data from the old version in the DB, try to move it to the new main table to prevent errors
+				if type(db[k]) == "table" then
+					db.main[k] = db.main[k] or {}
+					for i, j in pairs(v) do
+						db.main[k][i] = db.main[k][i] or j
+					end
+				else -- number, string, boolean, etc
+					db.main[k] = db.main[k] or v
+				end
+				db[k] = nil -- Unset the OG blast from the past
+			end
+		end
 
 		if IsLoggedIn() then
 			private:PLAYER_LOGIN()
