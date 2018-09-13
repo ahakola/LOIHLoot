@@ -947,12 +947,14 @@ local function ShowWishlistOnBonusRoll(spellID, difficultyID) -- Show Wishlist o
 		itemDifficulty = 5
 	elseif difficultyID == 16 then -- Mythic Raid
 		itemDifficulty = 6
+	elseif difficultyID == 17 then -- LFR
+		itemDifficulty = 4
 	end
 
 	local mainCount, offCount, vanityCount = 0, 0, 0
 	for subTable, tableData in pairs(db) do
 		for itemID, itemData in pairs(tableData) do
-			if itemData and itemData.difficulty <= itemDifficulty then
+			if itemData and ((itemDifficulty == 4 and itemData.difficulty == 4) or (itemDifficulty == 3 and itemData.difficulty <= 4) or (itemDifficulty >= 5 and itemData.difficulty <= itemDifficulty)) then
 				if itemData.encounter == encounterID then
 					Debug("!!!", itemID, itemData.encounter, itemData.difficulty, subTable)
 					if subTable == "main" then
