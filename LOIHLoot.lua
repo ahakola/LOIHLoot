@@ -870,7 +870,11 @@ local function HookEJUpdate(self, ...) -- Hook EJ Update for wishlist-buttons
 			button.LOIHLoot:SetPoint("TOPRIGHT", -5, -5)
 		end
 
-		if button.itemID then
+		if not EJ_InstanceIsRaid() then -- Hide buttons in non-raid instances
+			button.LOIHLoot.main:Hide()
+			button.LOIHLoot.off:Hide()
+			button.LOIHLoot.vanity:Hide()
+		elseif button.itemID then
 			local _, difficultyID = _CheckLink(button.link) -- Update is spammy as hell when Loot-tab is open, but hopefully the itemLinks-table helps
 			difficultyID = difficultyID or 0
 
