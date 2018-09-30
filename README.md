@@ -70,5 +70,7 @@ Your Curse-account can be used to login at Curseforge.
 ### Translations
 
 German (deDE) by pas06
+Korean (koKR) by netaras
+
 
 **Please disable TradeSkillMaster before copy&amp;pasting Lua errors to me, it makes the Lua error -reports almost impossible to read.**
