@@ -164,6 +164,7 @@ local DEFAULT_CHAT_FRAME = DEFAULT_CHAT_FRAME
 local EJ_GetEncounterInfo = EJ_GetEncounterInfo
 local EJ_GetEncounterInfoByIndex = EJ_GetEncounterInfoByIndex
 local EJ_GetInstanceInfo = EJ_GetInstanceInfo
+local EJ_InstanceIsRaid = EJ_InstanceIsRaid
 --local EncounterJournalEncounterFrameInfoLootScrollFrame = _G.EncounterJournalEncounterFrameInfoLootScrollFrame -- Throws error if we try to local scope this before loading EJ
 local FONT_COLOR_CODE_CLOSE = FONT_COLOR_CODE_CLOSE
 local format = format
@@ -194,7 +195,6 @@ local IsInRaid = IsInRaid
 local IsLoggedIn = IsLoggedIn
 local LE_SPELL_CONFIRMATION_PROMPT_TYPE_BONUS_ROLL = LE_SPELL_CONFIRMATION_PROMPT_TYPE_BONUS_ROLL
 local math = math
-local MAX_RAID_MEMBERS = MAX_RAID_MEMBERS
 local NORMAL_FONT_COLOR_CODE = NORMAL_FONT_COLOR_CODE
 local NUM_BAG_SLOTS = NUM_BAG_SLOTS
 local ORANGE_FONT_COLOR_CODE = ORANGE_FONT_COLOR_CODE
@@ -202,7 +202,6 @@ local pairs = pairs
 local PLAYER_DIFFICULTY1 = PLAYER_DIFFICULTY1
 local PLAYER_DIFFICULTY2 = PLAYER_DIFFICULTY2
 local PLAYER_DIFFICULTY6 = PLAYER_DIFFICULTY6
-local print = print
 local RED_FONT_COLOR_CODE = RED_FONT_COLOR_CODE
 local ReloadUI = ReloadUI
 local ShowUIPanel = ShowUIPanel
@@ -240,7 +239,7 @@ local openHeaders = {}			-- Open headers
 local _syncStatus = ""			-- Status of Sync-data
 local syncedRoster = {}			-- Table to keep track of Synced people, 0 = unsynced, 1 = no reply, 2 = synced
 local currentRoster = {}		-- Helper table to keep track of roster changes
-local normalDifficultyID = 14	-- difficultyID for normal because LFR is higher than other difficulties
+local normalDifficultyID = 3	-- difficultyID for normal because LFR is higher than normal difficulty, LFR = 4, N = 3, H = 5, M = 6
 local Raids = {					-- RaidIDs and BossIDs
 	-- BfA
 		[1031] = { -- Uldir 
@@ -586,17 +585,28 @@ do -- _CheckGear() - Checks equipment for items on wishlist
 				local itemID, difficultyID = _CheckLink(GetInventoryItemLink("Player", i))
 
 				for subTable in pairs(db) do
-					if db[subTable][itemID] and db[subTable][itemID].difficulty <= difficultyID then -- Item found, upgrade or remove from wishlist
-						if difficultyID > 16 then -- LFR (17) or something went wrong
-							Debug("Upgraded by Equiped:", itemID, difficultyID, normalDifficultyID, subTable)
+					--if db[subTable][itemID] and db[subTable][itemID].difficulty <= difficultyID then -- Item found, upgrade or remove from wishlist
+					if db[subTable][itemID] then
+						if db[subTable][itemID].difficulty <= difficultyID then -- Item found, upgrade or remove from wishlist
+							if difficultyID >= 6 then -- Mythic or something went wrong
+								Debug("Remove by Equiped:", itemID, difficultyID, subTable)
 
-							db[subTable][itemID].difficulty = normalDifficultyID
-						elseif difficultyID < 16 then -- Normal (14), Heroic (15) or something went wrong
-							Debug("Upgraded by Equiped:", itemID, difficultyID, difficultyID + 1, subTable)
+								db[subTable][itemID] = nil
+							elseif difficultyID == 4 then -- LFR (is between normal and heroic, drop down to normal)
+								Debug("Upgraded by Equiped:", itemID, difficultyID, normalDifficultyID, subTable)
 
-							db[subTable][itemID].difficulty = difficultyID + 1
-						else -- Mythic (16)
-							Debug("Remove by Equiped:", itemID, difficultyID, subTable)
+								db[subTable][itemID].difficulty = normalDifficultyID							
+							elseif difficultyID == normalDifficultyID then -- Normal difficulty (LFR is between normal and heroic for some reason, skip LFR)
+								Debug("Upgraded by Equiped:", itemID, difficultyID, difficultyID + 2, subTable)
+
+								db[subTable][itemID].difficulty = difficultyID + 2
+							else -- Heroic (5)
+								Debug("Upgraded by Equiped:", itemID, difficultyID, difficultyID + 1, subTable)
+
+								db[subTable][itemID].difficulty = difficultyID + 1
+							end
+						elseif db[subTable][itemID].difficulty > 6 then -- Bugged item, shouldn't exist
+							Debug("Remove BUGGED by Equiped:", itemID, difficultyID, subTable)
 
 							db[subTable][itemID] = nil
 						end
@@ -604,6 +614,8 @@ do -- _CheckGear() - Checks equipment for items on wishlist
 				end
 			end
 		end
+
+		private:PLAYER_ENTERING_WORLD() -- Update Wishlist on BonusRollFrame
 
 		throttling = nil
 	end
@@ -628,17 +640,28 @@ do -- _CheckBags() - Checks inventory for items on wishlist
 				local itemID, difficultyID = _CheckLink(GetContainerItemLink(bag, slot))
 
 				for subTable in pairs(db) do
-					if db[subTable][itemID] and db[subTable][itemID].difficulty <= difficultyID then -- Item found, upgrade or remove from wishlist
-						if difficultyID > 16 then -- LFR (17) or something went wrong
-							Debug("Upgraded by Bags:", itemID, difficultyID, normalDifficultyID, subTable)
+					--if db[subTable][itemID] and db[subTable][itemID].difficulty <= difficultyID then -- Item found, upgrade or remove from wishlist
+					if db[subTable][itemID] then
+						if db[subTable][itemID].difficulty <= difficultyID then -- Item found, upgrade or remove from wishlist
+							if difficultyID >= 6 then -- Mythic or something went wrong
+								Debug("Remove by Bags:", itemID, difficultyID, subTable)
 
-							db[subTable][itemID].difficulty = normalDifficultyID
-						elseif difficultyID < 16 then -- Normal (14), Heroic (15) or something went wrong
-							Debug("Upgraded by Bags:", itemID, difficultyID, difficultyID + 1, subTable)
+								db[subTable][itemID] = nil
+							elseif difficultyID == 4 then -- LFR (is between normal and heroic, drop down to normal)
+								Debug("Upgraded by Bags:", itemID, difficultyID, normalDifficultyID, subTable)
 
-							db[subTable][itemID].difficulty = difficultyID + 1
-						else -- Mythic (16)
-							Debug("Remove by Bags:", itemID, difficultyID, subTable)
+								db[subTable][itemID].difficulty = normalDifficultyID
+							elseif difficultyID == normalDifficultyID then -- Normal difficulty (LFR is between normal and heroic for some reason, skip LFR)
+								Debug("Upgraded by Bags:", itemID, difficultyID, difficultyID + 2, subTable)
+
+								db[subTable][itemID].difficulty = difficultyID + 2
+							else -- Heroic (5)
+								Debug("Upgraded by Bags:", itemID, difficultyID, difficultyID + 1, subTable)
+
+								db[subTable][itemID].difficulty = difficultyID + 1
+							end
+						elseif db[subTable][itemID].difficulty > 6 then -- Bugged item, shouldn't exist
+							Debug("Remove BUGGED by Bags:", itemID, difficultyID, subTable)
 
 							db[subTable][itemID] = nil
 						end
@@ -646,6 +669,8 @@ do -- _CheckBags() - Checks inventory for items on wishlist
 				end
 			end
 		end
+
+		private:PLAYER_ENTERING_WORLD() -- Update Wishlist on BonusRollFrame
 
 		throttling = nil
 	end

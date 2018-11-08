@@ -23,7 +23,7 @@ Different wishlist-button textures and their meaning:
 
 Even though at current version you can see Wishlist-buttons on all EncounterJournal Loot-tabs, only raids are supported by the Sync at the moment.
 
-LOIHLoot should automaticly remove items from your wishlist when you receive them.
+LOIHLoot should automaticly upgrade to higher difficulty or remove items from your wishlist when you receive them.
 
 **NB:** Sync sends the wishlist data of **items that are EQUAL or LOWER to the CURRENT raid difficulty** (If you are in Heroic raid, your Normal and Heroic items from wishlist gets passed on, but your Mythic items doesn't), so **you should add items to you wishlist at the lowest difficulty level you mostly raid or the items benefit you** if you are raiding on multiple different difficulties at the same time.
 
@@ -43,11 +43,13 @@ Use the slash command without any additional commands to toggle the LOIHLoot win
 
 When in raid, the Sync-button becomes avalable for guild officers. When pressing the Sync-button it disables the button for 15 seconds to prevent spam, but everyone in raid should get the same data from one button press.
 
+**NB:** Sync-data includes data of **difficulties EQUAL or LOWER to the CURRENT raid difficulty** (If you are in Heroic raid, data for Normal and Heroic will be shown, but Mythic won't), so **you should resync after difficulty changes** if you are raiding on multiple different difficulties at the same raid or synced before you set the actual difficulty you are going to raid at.
+
 ---
 
 ### Known issues:
 
-* Wishlist-buttons show up on all Loot-tabs on EncounterJournal
+* Open a ticket if you find any
 
 ---
 
@@ -71,6 +73,3 @@ Your Curse-account can be used to login at Curseforge.
 
 - German (deDE) by pas06
 - Korean (koKR) by netaras
-
-
-**Please disable TradeSkillMaster before copy&amp;pasting Lua errors to me, it makes the Lua error -reports almost impossible to read.**
