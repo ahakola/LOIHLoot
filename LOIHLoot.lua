@@ -215,6 +215,7 @@ local tostring = tostring
 local tostringall = tostringall
 local type = type
 local UnitClass = UnitClass
+local UnitFactionGroup = UnitFactionGroup
 local UnitIsGroupLeader = UnitIsGroupLeader
 local UnitName = UnitName
 local unpack = unpack
@@ -251,6 +252,17 @@ local Raids = {					-- RaidIDs and BossIDs
 			2195, -- Zul, Reborn 
 			2194, -- Mythrax the Unraveler 
 			2147, -- G'huun 
+		},
+		[1176] = { -- Battle of Dazar'alor
+			(UnitFactionGroup("Player") == "Alliance") and 2344 or 2333, -- Champion of the Light // Champion of the Light
+			(UnitFactionGroup("Player") == "Alliance") and 2323 or 2325, -- Jadefire Masters // Grong, the Jungle Lord
+			(UnitFactionGroup("Player") == "Alliance") and 2340 or 2341, -- Grong, the Revenant // Jadefire Masters
+			2342, -- Opulence
+			2330, -- Conclave of the Chosen
+			2335, -- King Rastakhan
+			2334, -- High Tinker Mekkatorque
+			2337, -- Stormwall Blockade
+			2343, -- Lady Jaina Proudmoore
 		},
 	--[[ Legion
 		[768] = { -- Emerald Nightmare
