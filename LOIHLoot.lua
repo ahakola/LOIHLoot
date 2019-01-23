@@ -922,7 +922,11 @@ local function HookEJUpdate(self, ...) -- Hook EJ Update for wishlist-buttons
 				button.LOIHLoot.off:Hide()
 				button.LOIHLoot.vanity:Show()
 				if db.vanity[button.itemID] then -- Item
-					if db.vanity[button.itemID].difficulty == difficultyID then -- This difficulty
+					if db.vanity[button.itemID].difficulty == normalDifficultyID and difficultyID == 4 then -- Normal in DB, LFR in view
+						button.LOIHLoot.vanity:SetNormalTexture(downTex)
+					elseif db.vanity[button.itemID].difficulty == 4 and difficultyID == normalDifficultyID then -- LFR in DB, Normal in view
+						button.LOIHLoot.vanity:SetNormalTexture(upTex)
+					elseif db.vanity[button.itemID].difficulty == difficultyID then -- This difficulty
 						button.LOIHLoot.vanity:SetNormalTexture(checkTex)
 					elseif db.vanity[button.itemID].difficulty > difficultyID then -- Higher difficulty
 						button.LOIHLoot.vanity:SetNormalTexture(downTex)
@@ -938,7 +942,11 @@ local function HookEJUpdate(self, ...) -- Hook EJ Update for wishlist-buttons
 				button.LOIHLoot.vanity:Hide()
 
 				if db.main[button.itemID] then -- Item
-					if db.main[button.itemID].difficulty == difficultyID then -- This difficulty
+					if db.main[button.itemID].difficulty == normalDifficultyID and difficultyID == 4 then -- Normal in DB, LFR in view
+						button.LOIHLoot.main:SetNormalTexture(downTex)
+					elseif db.main[button.itemID].difficulty == 4 and difficultyID == normalDifficultyID then -- LFR in DB, Normal in view
+						button.LOIHLoot.main:SetNormalTexture(upTex)
+					elseif db.main[button.itemID].difficulty == difficultyID then -- This difficulty
 						button.LOIHLoot.main:SetNormalTexture(checkTex)
 					elseif db.main[button.itemID].difficulty > difficultyID then -- Higher difficulty
 						button.LOIHLoot.main:SetNormalTexture(downTex)
@@ -950,7 +958,11 @@ local function HookEJUpdate(self, ...) -- Hook EJ Update for wishlist-buttons
 				end
 
 				if db.off[button.itemID] then -- Item
-					if db.off[button.itemID].difficulty == difficultyID then -- This difficulty
+					if db.off[button.itemID].difficulty == normalDifficultyID and difficultyID == 4 then -- Normal in DB, LFR in view
+						button.LOIHLoot.off:SetNormalTexture(downTex)
+					elseif db.off[button.itemID].difficulty == 4 and difficultyID == normalDifficultyID then -- LFR in DB, Normal in view
+						button.LOIHLoot.off:SetNormalTexture(upTex)
+					elseif db.off[button.itemID].difficulty == difficultyID then -- This difficulty
 						button.LOIHLoot.off:SetNormalTexture(checkTex)
 					elseif db.off[button.itemID].difficulty > difficultyID then -- Higher difficulty
 						button.LOIHLoot.off:SetNormalTexture(downTex)
