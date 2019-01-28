@@ -1348,7 +1348,7 @@ function private.Frame_UpdateList(self, ...) -- Update list
 				button.detail.text:SetText(_GetBossName(filteredList[index]))
 				button.detail.main:SetFormattedText("|cff%s%d/%d\n(%d%%)|r", mainColorString, mainCount, totalCount, mainPercent)
 				button.detail.off:SetFormattedText("|cff%s%d/%d\n(%d%%)|r", offColorString, offCount, totalCount, offPercent)
-				button.detail.vanity:SetFormattedText("%d/%d\n(%d%%)", vanityPercent, totalCount, vanityPercent)
+				button.detail.vanity:SetFormattedText("%d/%d\n(%d%%)", vanityCount, totalCount, vanityPercent)
 				button.header:Hide()
 				button.detail:Show()
 
