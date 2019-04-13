@@ -264,6 +264,10 @@ local Raids = {					-- RaidIDs and BossIDs
 			2337, -- Stormwall Blockade
 			2343, -- Lady Jaina Proudmoore
 		},
+		[1177] = { -- Crucible of Storms
+			2328, -- The Restless Cabal
+			2332, -- Uu'nat, Harbinger of the Void
+		},
 	--[[ Legion
 		[768] = { -- Emerald Nightmare
 			1703, -- Nythendra
@@ -1270,11 +1274,40 @@ function private.Frame_UpdateButtons() -- Update button states and highlight loc
 	end
 end
 
+local order = {} -- Get instances in right order in the main view
 function private.FilterList() -- Filter list items
 	Debug("FilterList")
 
 	wipe(filteredList)
-	local skipping
+
+	for instanceID in pairs(Raids) do -- Add instanceIDs to the order-table because Raids isn't continuously indexed table and can't be sorted or iterated in order
+		local found = false
+		for i = 1, #order do
+			if order[i] == instanceID then
+				found = true
+				break
+			end
+		end
+		if not found then -- Add and sort only if it is new instanceID
+			order[#order + 1] = instanceID
+			sort(order)
+		end
+	end
+
+	for i = 1, #order do -- Now we have the right order for the instances, populate the list for the main view
+		local bossIDs = Raids[order[i]] -- instanceID
+		local instanceName = EJ_GetInstanceInfo(order[i]) -- instanceID
+		
+		filteredList[#filteredList + 1] = instanceName
+
+		if openHeaders[instanceName] then
+			for j = 1, #bossIDs do -- Encounters are listed with proper indexes so we can just iterate through them
+				filteredList[#filteredList + 1] = bossIDs[j] -- encounterID
+			end
+		end
+	end
+
+	--[[local skipping
 
 	for instanceID, bossIDs in pairs(Raids) do
 		local instanceName = EJ_GetInstanceInfo(instanceID)
@@ -1286,7 +1319,7 @@ function private.FilterList() -- Filter list items
 				filteredList[#filteredList + 1] = encounterID
 			end
 		end
-	end
+	end]]
 end
 
 function private.Frame_UpdateList(self, ...) -- Update list
