@@ -268,6 +268,16 @@ local Raids = {					-- RaidIDs and BossIDs
 			2328, -- The Restless Cabal
 			2332, -- Uu'nat, Harbinger of the Void
 		},
+		[1179] = { -- The Eternal Palace
+			2352, -- Abyssal Commander Sivara
+			2347, -- Blackwater Behemoth
+			2353, -- Radiance of Azshara
+			2354, -- Lady Ashvane
+			2351, -- Orgozoa
+			2359, -- The Queen's Court
+			2349, -- Za'qul, Harbinger of Ny'alotha
+			2361, -- Queen Azshara
+		},
 	--[[ Legion
 		[768] = { -- Emerald Nightmare
 			1703, -- Nythendra
