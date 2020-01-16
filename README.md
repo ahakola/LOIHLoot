@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/ahakola/LOIHLoot.svg?branch=master)](https://travis-ci.com/ahakola/LOIHLoot)
+
 # LOIHLoot
 
 Gives players option to create Wishlists from raid drops. For guild officers addon also gives option to synchronize data from all raid members to give them idea what bosses should be focused lootwise for maximum chance of getting upgrades.

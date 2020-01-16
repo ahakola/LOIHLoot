@@ -278,6 +278,20 @@ local Raids = {					-- RaidIDs and BossIDs
 			2349, -- Za'qul, Harbinger of Ny'alotha
 			2361, -- Queen Azshara
 		},
+		[1180] = { -- Ny'alotha, the Waking City
+			2368, -- Wrathion, the Black Emperor
+			2365, -- Maut
+			2369, -- The Prophet Skitra
+			2377, -- Dark Inquisitor Xanesh
+			2372, -- The Hivemind
+			2367, -- Shad'har the Insatiable
+			2373, -- Drest'agath
+			2374, -- Il'gynoth, Corruption Reborn
+			2370, -- Vexiona
+			2364, -- Ra-den the Despoiled
+			2366, -- Carapace of N'Zoth
+			2375, -- N'Zoth the Corruptor
+		},
 	--[[ Legion
 		[768] = { -- Emerald Nightmare
 			1703, -- Nythendra
