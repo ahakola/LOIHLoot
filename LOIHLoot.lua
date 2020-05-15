@@ -151,76 +151,10 @@ local L = private.L
 local cfg, db, LOIHLootFrame
 
 local _G = _G
-local Ambiguate = Ambiguate
-local BonusRollFrame = BonusRollFrame
 local C_ChatInfo = C_ChatInfo
 local C_GuildInfo = C_GuildInfo
 local C_Timer = C_Timer
-local ChatFrame3 = ChatFrame3
-local CreateFrame = CreateFrame
-local date = date
-local DEBUG_CHAT_FRAME = DEBUG_CHAT_FRAME
-local DEFAULT_CHAT_FRAME = DEFAULT_CHAT_FRAME
-local EJ_GetEncounterInfo = EJ_GetEncounterInfo
-local EJ_GetEncounterInfoByIndex = EJ_GetEncounterInfoByIndex
-local EJ_GetInstanceInfo = EJ_GetInstanceInfo
-local EJ_InstanceIsRaid = EJ_InstanceIsRaid
---local EncounterJournalEncounterFrameInfoLootScrollFrame = _G.EncounterJournalEncounterFrameInfoLootScrollFrame -- Throws error if we try to local scope this before loading EJ
-local FONT_COLOR_CODE_CLOSE = FONT_COLOR_CODE_CLOSE
-local format = format
-local GAME_VERSION_LABEL = GAME_VERSION_LABEL
-local GameTooltip = GameTooltip
-local GetAddOnMemoryUsage = GetAddOnMemoryUsage
-local GetAddOnMetadata = GetAddOnMetadata
-local GetBonusRollEncounterJournalLinkDifficulty = GetBonusRollEncounterJournalLinkDifficulty
-local GetClassInfo = GetClassInfo
-local GetContainerItemLink = GetContainerItemLink
-local GetContainerNumSlots = GetContainerNumSlots
-local GetInventoryItemLink = GetInventoryItemLink
-local GetItemInfo = GetItemInfo
-local GetJournalInfoForSpellConfirmation = GetJournalInfoForSpellConfirmation
-local GetNumGroupMembers = GetNumGroupMembers
-local GetRaidDifficultyID = GetRaidDifficultyID
-local GetRaidRosterInfo = GetRaidRosterInfo
-local GetSpellConfirmationPromptsInfo = GetSpellConfirmationPromptsInfo
-local GREEN_FONT_COLOR_CODE = GREEN_FONT_COLOR_CODE
-local gsub = gsub
-local HideUIPanel = HideUIPanel
-local HIGHLIGHT_FONT_COLOR_CODE = HIGHLIGHT_FONT_COLOR_CODE
-local HybridScrollFrame_GetOffset = HybridScrollFrame_GetOffset
-local HybridScrollFrame_Update = HybridScrollFrame_Update
-local ipairs = ipairs
-local IsAddOnLoaded = IsAddOnLoaded
-local IsInRaid = IsInRaid
-local IsLoggedIn = IsLoggedIn
-local LE_SPELL_CONFIRMATION_PROMPT_TYPE_BONUS_ROLL = LE_SPELL_CONFIRMATION_PROMPT_TYPE_BONUS_ROLL
 local math = math
-local NORMAL_FONT_COLOR_CODE = NORMAL_FONT_COLOR_CODE
-local NUM_BAG_SLOTS = NUM_BAG_SLOTS
-local ORANGE_FONT_COLOR_CODE = ORANGE_FONT_COLOR_CODE
-local pairs = pairs
-local PLAYER_DIFFICULTY1 = PLAYER_DIFFICULTY1
-local PLAYER_DIFFICULTY2 = PLAYER_DIFFICULTY2
-local PLAYER_DIFFICULTY6 = PLAYER_DIFFICULTY6
-local RED_FONT_COLOR_CODE = RED_FONT_COLOR_CODE
-local ReloadUI = ReloadUI
-local ShowUIPanel = ShowUIPanel
-local strjoin = strjoin
-local strmatch = strmatch
-local strsplit = strsplit
-local strsub = strsub
-local ToggleFrame = ToggleFrame
-local tonumber = tonumber
-local tostring = tostring
-local tostringall = tostringall
-local type = type
-local UnitClass = UnitClass
-local UnitFactionGroup = UnitFactionGroup
-local UnitIsGroupLeader = UnitIsGroupLeader
-local UnitName = UnitName
-local unpack = unpack
-local UpdateAddOnMemoryUsage = UpdateAddOnMemoryUsage
-local wipe = wipe
 
 -- Private constants
 private.version = GetAddOnMetadata(ADDON_NAME, "Version")
@@ -235,160 +169,25 @@ local _raidCount = 0			-- Players in raid group
 local _syncReplies = 0			-- SyncReplies from raid group
 local _syncLock = false			-- Is Sync-button disabled?
 local SyncTable = {}			-- Sync-data list
-local filteredList = {}		-- Filtered list
+local filteredList = {}			-- Filtered list
 local openHeaders = {}			-- Open headers
 local _syncStatus = ""			-- Status of Sync-data
 local syncedRoster = {}			-- Table to keep track of Synced people, 0 = unsynced, 1 = no reply, 2 = synced
 local currentRoster = {}		-- Helper table to keep track of roster changes
 local normalDifficultyID = 3	-- difficultyID for normal because LFR is higher than normal difficulty, LFR = 4, N = 3, H = 5, M = 6
-local Raids = {					-- RaidIDs and BossIDs
-	-- BfA
-		[1031] = { -- Uldir 
-			2168, -- Taloc 
-			2167, -- MOTHER 
-			2146, -- Fetid Devourer 
-			2169, -- Zek'voz, Herald of N'zoth 
-			2166, -- Vectis 
-			2195, -- Zul, Reborn 
-			2194, -- Mythrax the Unraveler 
-			2147, -- G'huun 
-		},
-		[1176] = { -- Battle of Dazar'alor
-			(UnitFactionGroup("Player") == "Alliance") and 2344 or 2333, -- Champion of the Light // Champion of the Light
-			(UnitFactionGroup("Player") == "Alliance") and 2323 or 2325, -- Jadefire Masters // Grong, the Jungle Lord
-			(UnitFactionGroup("Player") == "Alliance") and 2340 or 2341, -- Grong, the Revenant // Jadefire Masters
-			2342, -- Opulence
-			2330, -- Conclave of the Chosen
-			2335, -- King Rastakhan
-			2334, -- High Tinker Mekkatorque
-			2337, -- Stormwall Blockade
-			2343, -- Lady Jaina Proudmoore
-		},
-		[1177] = { -- Crucible of Storms
-			2328, -- The Restless Cabal
-			2332, -- Uu'nat, Harbinger of the Void
-		},
-		[1179] = { -- The Eternal Palace
-			2352, -- Abyssal Commander Sivara
-			2347, -- Blackwater Behemoth
-			2353, -- Radiance of Azshara
-			2354, -- Lady Ashvane
-			2351, -- Orgozoa
-			2359, -- The Queen's Court
-			2349, -- Za'qul, Harbinger of Ny'alotha
-			2361, -- Queen Azshara
-		},
-		[1180] = { -- Ny'alotha, the Waking City
-			2368, -- Wrathion, the Black Emperor
-			2365, -- Maut
-			2369, -- The Prophet Skitra
-			2377, -- Dark Inquisitor Xanesh
-			2372, -- The Hivemind
-			2367, -- Shad'har the Insatiable
-			2373, -- Drest'agath
-			2374, -- Il'gynoth, Corruption Reborn
-			2370, -- Vexiona
-			2364, -- Ra-den the Despoiled
-			2366, -- Carapace of N'Zoth
-			2375, -- N'Zoth the Corruptor
-		},
-	--[[ Legion
-		[768] = { -- Emerald Nightmare
-			1703, -- Nythendra
-			1738, -- Il'gynoth, Heart of Corruption
-			1744, -- Elerethe Renferal
-			1667, -- Ursoc
-			1704, -- Dragons of Nightmare
-			1750, -- Cenarius
-			1726, -- Xavius
-		},
-		[861] = { -- Trial of Valor
-			1819, -- Odyn
-			1830, -- Guarm
-			1829, -- Helya
-		},
-		[786] = { -- The Nighthold
-			1706, -- Skorpyron
-			1725, -- Chronomatic Anomaly
-			1731, -- Trilliax
-			1751, -- Spellblade Aluriel
-			1762, -- Tichondrius
-			1713, -- Krosus
-			1761, -- High Botanist Tel'arn
-			1732, -- Star Augur Etraeus
-			1743, -- Grand Magistrix Elisande
-			1737, -- Gul'dan
-		},
-		[875] = { -- Tomb of Sargeras
-			1862, -- Goroth
-			1867, -- Demonic Inquisition
-			1856, -- Harjatan
-			1903, -- Sisters of the Moon
-			1861, -- Mistress Sassz'ine
-			1896, -- The Desolate Host
-			1897, -- Maiden of Vigilance
-			1873, -- Fallen Avatar
-			1898, -- Kil'jaeden
-		},
-		[946] = { -- Antorus, the Burning Throne
-			1992, -- Garothi Worldbreaker
-			1987, -- Felhounds of Sargeras
-			1997, -- Antoran High Command
-			1985, -- Portal Keeper Hasabel
-			2025, -- Eonar the Life-Binder
-			2009, -- Imonar the Soulhunter
-			2004, -- Kin'garoth
-			1983, -- Varimathras
-			1986, -- The Coven of Shivarra
-			1984, -- Aggramar
-			2031, -- Argus the Unmaker
-		},
-	]]--
-	--[[ WoD
-		[477] = { -- Highmaul
-			1128, -- Kargath Bladefist
-			971, -- The Butcher
-			1195, -- Tectus
-			1196, -- Brackenspore
-			1148, -- Twin Ogron
-			1153, -- Ko'ragh
-			1197, -- Imperator Mar'gok
-		},
-		[457] = { -- Blackrock Foundry
-			1161, -- Gruul
-			1202, -- Oregorger
-			1154, -- The Blast Furnace
-			1155, -- Hans'gar and Franzok
-			1123, -- Flamebender Ka'graz
-			1162, -- Kromog
-			1122, -- Beastlord Darmac
-			1147, -- Operator Thogar
-			1203, -- The Iron Maidens
-			959, -- Blackhand
-		},
-		[669] = { -- Hellfire Citadel
-			1426, -- Hellfire Assault
-			1425, -- Iron Reaver
-			1392, -- Kormrok
-			1432, -- Hellfire High Council
-			1396, -- Kilrogg Deadeye
-			1372, -- Gorefiend
-			1433, -- Shadow-Lord Iskar
-			1427, -- Socrethar the Eternal
-			1391, -- Fel Lord Zakuun
-			1447, -- Xhul'horac
-			1394, -- Tyrant Velhari
-			1395, -- Mannoroth
-			1438, -- Archimonde
-		},
-	]]--
-}
 
-for k in pairs(Raids) do -- Automate _latestTier so I don't have to manually change it
-	if k > _latestTier then
-		_latestTier = k
-	end
-end
+local ignoredInstaces = {		-- Ignored instanceIDs when populating Raids-table
+	-- World Bosses
+	[322] = true, -- MoP
+	[557] = true, -- WoD
+	[822] = true, -- Legion
+	[1028] = true, -- BfA
+
+	-- Other
+	[959] = true, -- Invasion Points (Legion)
+}
+local RaidInstanceOrder = {}	-- Get instances in right order in the main view
+local Raids = {}				-- Populated with RaidIDs and BossIDs later
 
 local itemLinks = {}			-- Store itemLinks for fewer function calls
 local bossNames = {}			-- Store raid boss names here for fewer function calls
@@ -613,6 +412,46 @@ local function _CreateButtons() -- Create small Wishlist-buttons to EJ's loot vi
 			button.LOIHLoot = container
 		end
 	end
+end
+
+local function _PopulateRaids() -- Populate Raids-table from EJ
+	Debug("Populate Raids-table")
+
+	local tiers = EJ_GetNumTiers()
+	--for i = 1, tiers do
+		--EJ_SelectTier(i)
+		EJ_SelectTier(tiers) -- Only populate with the newest expansion data.
+
+		local index = 1
+		local instanceID = EJ_GetInstanceByIndex(index, true)
+		while instanceID do
+			if not ignoredInstaces[instanceID] then
+				RaidInstanceOrder[#RaidInstanceOrder + 1] = instanceID
+				Raids[instanceID] = Raids[instanceID] or {}
+				if instanceID > _latestTier then
+					_latestTier = instanceID
+				end
+
+				EJ_SelectInstance(instanceID)
+				--local instanceName = EJ_GetInstanceInfo()
+				local EJIndex = 1
+				local bossName, _, bossID = EJ_GetEncounterInfoByIndex(EJIndex)
+				while bossName do
+					Raids[instanceID][#Raids[instanceID] + 1] = bossID
+
+					EJIndex = EJIndex + 1
+					bossName, _, bossID = EJ_GetEncounterInfoByIndex(EJIndex)
+				end
+			end
+
+			index = index + 1
+			instanceID = EJ_GetInstanceByIndex(index, true)
+		end
+	--end
+
+	openHeaders[EJ_GetInstanceInfo(_latestTier)] = true
+	private.FilterList()
+	private.Frame_UpdateList()
 end
 
 local _CheckGear, _CheckBags
@@ -1071,6 +910,25 @@ local function ShowWishlistOnBonusRoll(spellID, difficultyID) -- Show Wishlist o
 	LOIHLootFrame.BonusText:Show()
 end
 
+local function _CheckForBonusRolls(event) -- From UIParent.lua, check if there are BonusRolls going on
+	local spellConfirmations = GetSpellConfirmationPromptsInfo()
+
+	for i, spellConfirmation in ipairs(spellConfirmations) do
+		--spellConfirmation.spellID
+		--spellConfirmation.confirmType
+		--spellConfirmation.text
+		--spellConfirmation.duration
+		--spellConfirmation.currencyID
+		--spellConfirmation.currencyCost
+		if spellConfirmation.spellID then
+			if spellConfirmation.confirmType == LE_SPELL_CONFIRMATION_PROMPT_TYPE_BONUS_ROLL then
+				Debug("SPELL_CONFIRMATION_PROMT on", event, spellConfirmation.spellID)
+				ShowWishlistOnBonusRoll(spellConfirmation.spellID)
+			end
+		end
+	end
+end
+
 ------------------------------------------------------------------------
 --	Initialization functions
 ------------------------------------------------------------------------
@@ -1083,6 +941,7 @@ function private:ADDON_LOADED(addon)
 			Debug("Blizzard_EncounterJournal pre-loaded")
 
 			_CreateButtons()
+			_PopulateRaids()
 
 			EncounterJournalEncounterFrameInfoLootScrollFrame:HookScript("OnUpdate", HookEJUpdate)
 		end
@@ -1119,6 +978,7 @@ function private:ADDON_LOADED(addon)
 		end
 
 		_CreateButtons()
+		_PopulateRaids()
 
 		EncounterJournalEncounterFrameInfoLootScrollFrame:HookScript("OnUpdate", HookEJUpdate)
 	else return end
@@ -1172,6 +1032,7 @@ end
 function private:ITEM_PUSH()
 	-- Fired when an item is pushed onto the "inventory-stack". For instance when you manufacture something with your trade skills or picks something up.
 	if IsInRaid() then
+		_CheckForBonusRolls("ITEM_PUSH") -- Update Wishlist on BonusRoll if we loot something
 		_CheckBags()
 	end
 end
@@ -1260,23 +1121,8 @@ function private:SPELL_CONFIRMATION_PROMPT(spellID, confirmType, ...) -- Add Wis
 	ShowWishlistOnBonusRoll(spellID, difficultyID)
 end
 
-function private:PLAYER_ENTERING_WORLD() -- From UIParent.lua, check if there are BonusRolls going on
-	local spellConfirmations = GetSpellConfirmationPromptsInfo()
-
-	for i, spellConfirmation in ipairs(spellConfirmations) do
-		--spellConfirmation.spellID
-		--spellConfirmation.confirmType
-		--spellConfirmation.text
-		--spellConfirmation.duration
-		--spellConfirmation.currencyID
-		--spellConfirmation.currencyCost
-		if spellConfirmation.spellID then
-			if spellConfirmation.confirmType == LE_SPELL_CONFIRMATION_PROMPT_TYPE_BONUS_ROLL then
-				Debug("SPELL_CONFIRMATION_PROMT on LOGIN", spellConfirmation.spellID)
-				ShowWishlistOnBonusRoll(spellConfirmation.spellID)
-			end
-		end
-	end
+function private:PLAYER_ENTERING_WORLD()
+	_CheckForBonusRolls("PLAYER_ENTERING_WORLD")
 end
 
 ------------------------------------------------------------------------
@@ -1298,29 +1144,14 @@ function private.Frame_UpdateButtons() -- Update button states and highlight loc
 	end
 end
 
-local order = {} -- Get instances in right order in the main view
 function private.FilterList() -- Filter list items
 	Debug("FilterList")
 
 	wipe(filteredList)
 
-	for instanceID in pairs(Raids) do -- Add instanceIDs to the order-table because Raids isn't continuously indexed table and can't be sorted or iterated in order
-		local found = false
-		for i = 1, #order do
-			if order[i] == instanceID then
-				found = true
-				break
-			end
-		end
-		if not found then -- Add and sort only if it is new instanceID
-			order[#order + 1] = instanceID
-			sort(order)
-		end
-	end
-
-	for i = 1, #order do -- Now we have the right order for the instances, populate the list for the main view
-		local bossIDs = Raids[order[i]] -- instanceID
-		local instanceName = EJ_GetInstanceInfo(order[i]) -- instanceID
+	for i = 1, #RaidInstanceOrder do -- Now we have the right order for the instances, populate the list for the main view
+		local bossIDs = Raids[RaidInstanceOrder[i]] -- instanceID
+		local instanceName = EJ_GetInstanceInfo(RaidInstanceOrder[i]) -- instanceID
 		
 		filteredList[#filteredList + 1] = instanceName
 
@@ -1330,20 +1161,6 @@ function private.FilterList() -- Filter list items
 			end
 		end
 	end
-
-	--[[local skipping
-
-	for instanceID, bossIDs in pairs(Raids) do
-		local instanceName = EJ_GetInstanceInfo(instanceID)
-		skipping = not openHeaders[instanceName]
-		filteredList[#filteredList + 1] = instanceName
-
-		if not skipping then
-			for _, encounterID in pairs(bossIDs) do
-				filteredList[#filteredList + 1] = encounterID
-			end
-		end
-	end]]
 end
 
 function private.Frame_UpdateList(self, ...) -- Update list
@@ -1542,7 +1359,7 @@ function private.OnLoad(self)
 
 	-- Make sure the newest raid tier is open
 	if _latestTier then
-		openHeaders[EJ_GetInstanceInfo(_latestTier)] = true
+		--openHeaders[EJ_GetInstanceInfo(_latestTier)] = true
 	end
 
 	-- Fill HybridScrollFrame
@@ -1597,7 +1414,7 @@ local SlashHandlers = {
 		private.Frame_UpdateButtons()
 		Print(L.PRT_DEBUG_FALSE, ADDON_NAME)
 	end,
-	[L.CMD_DUMP] = function(params) -- 'bossdump' as default, this is hidden command
+	--[[[L.CMD_DUMP] = function(params) -- 'bossdump' as default, this is hidden command
 		if not params or params == "" then
 			Print("InstanceID? Try 'EJ_GetInstanceInfo()'")
 			return
@@ -1616,7 +1433,7 @@ local SlashHandlers = {
 		until not name
 
 		Print("},")
-	end,
+	end,]]--
 	["roster"] = function() -- Check SyncStatus from roster
 		local testNoSync, testNoReply, testGaveReply, testError = 0, 0, 0, 0
 
@@ -1632,7 +1449,7 @@ local SlashHandlers = {
 			end
 		end
 
-		Print("Roster\n          - 0:", testNoSync, "\n          - 1:", testNoReply, "\n          - 2:", testGaveReply, "\n          - E:", testError, "\n          - T:", GetNumGroupMembers())
+		Print("Roster\n   - NotSyncedYet:", testNoSync, "\n   - NoReply:", testNoReply, "\n   - Replied:", testGaveReply, "\n   - Error:", testError, "\n   - GroupSize:", GetNumGroupMembers())
 	end,
 	["version"] = function() -- Check Versions of group members
 		local err = C_ChatInfo.SendAddonMessage(ADDON_NAME, "VersionRequest-"..(private.version or ""), _commType)
@@ -1699,6 +1516,14 @@ local SlashHandlers = {
 }
 
 SlashCmdList["LOIHLOOT"] = function(text)
+	if not IsAddOnLoaded("Blizzard_EncounterJournal") then -- Load EJ if it isn't loaded yet, otherwise the LOIHLootFrame will have empty list until we load EJ
+		local loaded, reason = LoadAddOn("Blizzard_EncounterJournal")
+		
+		if not loaded then
+  			Debug(ADDON_LOAD_FAILED, "Blizzard_EncounterJournal", _G["ADDON_" .. reason] or reason)
+		end
+	end
+
 	if not text or text == "" then
 		return ToggleFrame(LOIHLootFrame)
 	end
