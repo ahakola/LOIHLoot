@@ -1520,7 +1520,7 @@ SlashCmdList["LOIHLOOT"] = function(text)
 		local loaded, reason = LoadAddOn("Blizzard_EncounterJournal")
 		
 		if not loaded then
-  			Debug(ADDON_LOAD_FAILED, "Blizzard_EncounterJournal", _G["ADDON_" .. reason] or reason)
+  			Print(ADDON_LOAD_FAILED, "Blizzard_EncounterJournal", _G["ADDON_" .. reason] or reason)
 		end
 	end
 
