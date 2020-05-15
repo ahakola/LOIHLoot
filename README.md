@@ -75,3 +75,4 @@ Your Curse-account can be used to login at Curseforge.
 
 - German (deDE) by pas06
 - Korean (koKR) by netaras
+- Traditional Chinese (zhTW) by RainbowUI
