@@ -1032,8 +1032,8 @@ end
 function private:ITEM_PUSH()
 	-- Fired when an item is pushed onto the "inventory-stack". For instance when you manufacture something with your trade skills or picks something up.
 	if IsInRaid() then
-		_CheckForBonusRolls("ITEM_PUSH") -- Update Wishlist on BonusRoll if we loot something
 		_CheckBags()
+		_CheckForBonusRolls("ITEM_PUSH") -- Update Wishlist on BonusRoll if we loot something
 	end
 end
 
