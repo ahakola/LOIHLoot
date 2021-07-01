@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/ahakola/LOIHLoot.svg?branch=master)](https://travis-ci.com/ahakola/LOIHLoot)
+![Release](https://github.com/ahakola/LOIHLoot/actions/workflows/release.yml/badge.svg)
 
 # LOIHLoot
 
