@@ -169,6 +169,7 @@ local _raidCount = 0			-- Players in raid group
 local _syncReplies = 0			-- SyncReplies from raid group
 local _syncLock = false			-- Is Sync-button disabled?
 local SyncTable = {}			-- Sync-data list
+local SyncNames = {}			-- Sync-names list if 'namesPerBoss' is enabled
 local filteredList = {}			-- Filtered list
 local openHeaders = {}			-- Open headers
 local _syncStatus = ""			-- Status of Sync-data
@@ -182,6 +183,7 @@ local ignoredInstaces = {		-- Ignored instanceIDs when populating Raids-table
 	[557] = true, -- WoD
 	[822] = true, -- Legion
 	[1028] = true, -- BfA
+	[1192] = true, -- SL
 
 	-- Other
 	[959] = true, -- Invasion Points (Legion)
@@ -192,7 +194,8 @@ local Raids = {}				-- Populated with RaidIDs and BossIDs later
 local itemLinks = {}			-- Store itemLinks for fewer function calls
 local bossNames = {}			-- Store raid boss names here for fewer function calls
 local cfgDefaults = {
-	debugmode = false,
+	debugmode = false,			-- Debug printing
+	namesPerBoss = false,		-- Store names of those players who need loot from bosses
 }
 local charDefaults = {
 	main = {},
@@ -221,9 +224,9 @@ local function Debug(text, ...)
 
 	if text then
 		if text:match("%%[dfqsx%d%.]") then
-			(DEBUG_CHAT_FRAME or ChatFrame3):AddMessage("|cffff9999"..ADDON_NAME..":|r " .. format(text, ...))
+			(DEBUG_CHAT_FRAME or (ChatFrame3:IsShown() and ChatFrame3 or ChatFrame4)):AddMessage("|cffff9999"..ADDON_NAME..":|r " .. format(text, ...))
 		else
-			(DEBUG_CHAT_FRAME or ChatFrame3):AddMessage("|cffff9999"..ADDON_NAME..":|r " .. strjoin(" ", text, tostringall(...)))
+			(DEBUG_CHAT_FRAME or (ChatFrame3:IsShown() and ChatFrame3 or ChatFrame4)):AddMessage("|cffff9999"..ADDON_NAME..":|r " .. strjoin(" ", text, tostringall(...)))
 		end
 	end
 end
@@ -637,6 +640,13 @@ local function _ProcessReply(sender, data) -- Process received SyncReplies
 					SyncTable[subTable][encounter] = SyncTable[subTable][encounter] + 1
 				end
 
+				if cfg.namesPerBoss then -- Save player names per boss
+					if not SyncNames[encounter] then
+						SyncNames[encounter] = {}
+					end
+					SyncNames[encounter][sender] = true
+				end
+
 				Debug("-", encounter, sender)
 			end
 		end
@@ -689,6 +699,7 @@ local function _SyncReply(difficulty) -- Send SyncReply
 	_raidCount = GetNumGroupMembers()
 	wipe(SyncTable)
 	SyncTable = initDB(SyncTable, charDefaults)
+	wipe(SyncNames)
 
 	LOIHLootFrame.selectedID = nil -- Deselect previous selection since we are going to change the bottom text anyway
 	private.Frame_SetDescriptionText("%s\n\n%s", _SyncLine(), L.SENDING_SYNC)
@@ -733,6 +744,7 @@ local function _Reset() -- Reset Character's wishlist and SyncTable
 	_syncReplies = 0
 	_raidCount = 0
 	wipe(SyncTable)
+	wipe(SyncNames)
 	wipe(db)
 	db = initDB(db, charDefaults)
 
@@ -927,6 +939,17 @@ local function _CheckForBonusRolls(event) -- From UIParent.lua, check if there a
 			end
 		end
 	end
+end
+
+local function stripColors(str) -- Strip color-codes from strings
+	local str = str or ""
+	str = string.gsub(str, "|c%x%x%x%x%x%x%x%x", "")
+	str = string.gsub(str, "|r", "")
+	return str
+end
+
+local function colorIndependentSort(a, b) -- Sort function to sort things based on the string content without color-codes
+	return stripColors(a) < stripColors(b)
 end
 
 ------------------------------------------------------------------------
@@ -1275,7 +1298,38 @@ function private.ButtonOnClick(self) -- Click Boss' name on list
 		local offText = format("%s:\n     %d / %d (%d%%)", L.LONG_OFFSPEC, offCount, _syncReplies, offPercent)
 		local vanityText = format("%s:\n     %d / %d (%d%%)", L.LONG_VANITY, vanityCount, _syncReplies, vanityPercent)
 
-		private.Frame_SetDescriptionText("%s\n\n%s%s%s\n%s\n%s\n%s", _SyncLine(), HIGHLIGHT_FONT_COLOR_CODE, bossName, FONT_COLOR_CODE_CLOSE, mainText, offText, vanityText)
+		if cfg.namesPerBoss then -- Separate players into lists based on whether or not they need loot from this boss
+			local needLoot, dontNeedLoot, tNames = "-", "-", {}
+
+			if SyncNames[index] then -- Players who need loot
+				for k in pairs(SyncNames[index]) do
+					local _, classFilename = UnitClass(k)
+					local colorStr = RAID_CLASS_COLORS[classFilename].colorStr or "ffffffff"
+					tNames[#tNames + 1] = "|c" .. colorStr .. k .. "|r"
+				end
+				sort(tNames, colorIndependentSort)
+				if #tNames > 0 then
+					needLoot = strjoin(",", unpack(tNames))
+				end
+			end
+
+			wipe(tNames)
+			for k in pairs(syncedRoster) do -- Players who don't need loot
+				if not SyncNames[index] or not SyncNames[index][k] then
+					local _, classFilename = UnitClass(k)
+					local colorStr = RAID_CLASS_COLORS[classFilename].colorStr or "ffffffff"
+					tNames[#tNames + 1] = "|c" .. colorStr .. k .. "|r"
+				end
+			end
+			sort(tNames, colorIndependentSort)
+			if #tNames > 0 then
+				dontNeedLoot = strjoin(",", unpack(tNames))
+			end
+
+			private.Frame_SetDescriptionText("%s\n\n%s%s%s\n%s\n%s\n%s\n\n%s\n %s\n%s\n %s", _SyncLine(), HIGHLIGHT_FONT_COLOR_CODE, bossName, FONT_COLOR_CODE_CLOSE, mainText, offText, vanityText, L.NEED_LOOT_FROM_BOSS, needLoot, L.DONT_NEED_LOOT_FROM_BOSS, dontNeedLoot)
+		else
+			private.Frame_SetDescriptionText("%s\n\n%s%s%s\n%s\n%s\n%s", _SyncLine(), HIGHLIGHT_FONT_COLOR_CODE, bossName, FONT_COLOR_CODE_CLOSE, mainText, offText, vanityText)
+		end
 
 		LOIHLootFrame.selectedID = index
 		private.Frame_UpdateList()
@@ -1413,6 +1467,13 @@ local SlashHandlers = {
 		_commType = "RAID"
 		private.Frame_UpdateButtons()
 		Print(L.PRT_DEBUG_FALSE, ADDON_NAME)
+	end,
+	[L.CMD_SAVENAMES] = function()
+		cfg.namesPerBoss = not cfg.namesPerBoss
+		Print(L.PRT_SAVENAMES, cfg.namesPerBoss and "|cff00ff00" .. L.ENABLED .. "|r" or "|cffff0000" .. L.DISABLED .. "|r")
+		if not cfg.namesPerBoss then
+			wipe(SyncNames)
+		end
 	end,
 	--[[[L.CMD_DUMP] = function(params) -- 'bossdump' as default, this is hidden command
 		if not params or params == "" then
