@@ -39,6 +39,7 @@ Use `/loihloot` or `/lloot` with the following commands:
 * `hide` - hide LOIHLoot window
 * `reset` - reset current character's wishlist
 * `status` - report the status of LOIHLoot
+* `savenames` - enable/disable saving player names per boss for LOIHLoot window
 * `help` - show this help message ingame
 
 Use the slash command without any additional commands to toggle the LOIHLoot window.

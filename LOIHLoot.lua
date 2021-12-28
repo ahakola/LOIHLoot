@@ -1307,8 +1307,8 @@ function private.ButtonOnClick(self) -- Click Boss' name on list
 					local colorStr = RAID_CLASS_COLORS[classFilename].colorStr or "ffffffff"
 					tNames[#tNames + 1] = "|c" .. colorStr .. k .. "|r"
 				end
-				sort(tNames, colorIndependentSort)
 				if #tNames > 0 then
+					sort(tNames, colorIndependentSort)
 					needLoot = strjoin(",", unpack(tNames))
 				end
 			end
@@ -1321,8 +1321,8 @@ function private.ButtonOnClick(self) -- Click Boss' name on list
 					tNames[#tNames + 1] = "|c" .. colorStr .. k .. "|r"
 				end
 			end
-			sort(tNames, colorIndependentSort)
 			if #tNames > 0 then
+				sort(tNames, colorIndependentSort)
 				dontNeedLoot = strjoin(",", unpack(tNames))
 			end
 
