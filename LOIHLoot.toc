@@ -8,6 +8,9 @@
 
 Localization-en.lua
 Localization-de.lua
+Localization-ko.lua
+Localization-ru.lua
+Localization-zh.lua
 
 LOIHLoot.lua
 LOIHLootFrame.xml
