@@ -104,7 +104,7 @@ drag:SetScript("OnHide", _StopMovingFrame)
 --  CLOSE X BUTTON
 
 local closeX = CreateFrame("Button", nil, LOIHLootFrame, "UIPanelCloseButton")
-closeX:SetPoint("TOPRIGHT", -30, -8)
+closeX:SetPoint("TOPRIGHT", -34, -12)
 LOIHLootFrame.CloseButtonX = closeX
 
 ------------------------------------------------------------------------
@@ -133,18 +133,16 @@ LOIHLootFrame.SyncText = syncText
 ------------------------------------------------------------------------
 --  TAB BUTTONS
 
-local function tab_OnShow(self)
-	PanelTemplates_TabResize(self, 0)
-	_G[self:GetName() .. "HighlightTexture"]:SetWidth(self:GetTextWidth() + 31)
+local subtitleTab = CreateFrame("Button", "$parentSubTitleTab", LOIHLootFrame, "TabSystemTemplate")
+subtitleTab:SetPoint("TOPLEFT", 70, -42)
+do 
+	local tabId = subtitleTab:AddTab(L.TAB_WISHLIST)
+	subtitleTab:SetTabEnabled(tabId, false)
+	local tabButton = subtitleTab:GetTabButton(tabId)
+	tabButton.isTabOnTop = true
+	tabButton:HandleRotation()
 end
-
-local subtitleTab = CreateFrame("Button", "$parentSubTitleTab", LOIHLootFrame, "TabButtonTemplate")
-subtitleTab:SetPoint("TOPLEFT", 70, -39)
-subtitleTab:SetID(1)
-subtitleTab:SetScript("OnShow", tab_OnShow)
-subtitleTab:SetText(L.TAB_WISHLIST)
-PanelTemplates_SelectTab(subtitleTab)
-LOIHLootFrame.SubTitleTab= subtitleTab
+LOIHLootFrame.SubTitleTab = subtitleTab
 
 ------------------------------------------------------------------------
 --  LIST FRAME
@@ -241,3 +239,5 @@ LOIHLootFrame.BonusText = bonusText
 LOIHLootFrame:SetScript("OnEvent", private.OnEvent)
 
 private.OnLoad(LOIHLootFrame)
+
+-- EOF

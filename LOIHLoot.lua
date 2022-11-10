@@ -184,6 +184,7 @@ local ignoredInstaces = {		-- Ignored instanceIDs when populating Raids-table
 	[822] = true, -- Legion
 	[1028] = true, -- BfA
 	[1192] = true, -- SL
+	[1205] = true, -- DF
 
 	-- Other
 	[959] = true, -- Invasion Points (Legion)
@@ -363,13 +364,15 @@ local function _WishlistOnClick(button, ...) -- EJ Wishlist-buttons OnClick-scri
 	_WishlistOnEnter(button, ...)
 end
 
-local function _CreateButtons() -- Create small Wishlist-buttons to EJ's loot view
-	Debug("Button Factory running")
+buttonCount = 0
+local function _CreateButtons(button) -- Create small Wishlist-buttons to EJ's loot view
+	Debug("Button Factory running", buttonCount + 1)
 
-	for i = 1, 8 do
-		local button = _G["EncounterJournalEncounterFrameInfoLootScrollFrameButton"..i]
+	--for i = 1, 8 do
+		--local button = _G["EncounterJournalEncounterFrameInfoLootScrollFrameButton"..i]
 		if button and not button.LOIHLoot then
-			local container = CreateFrame("Frame", "LOIHLootButtons"..i, button)
+			buttonCount = buttonCount + 1
+			local container = CreateFrame("Frame", "LOIHLootButtons"..buttonCount, button)
 			container:SetSize(37, 16)
 			container:SetPoint("TOPRIGHT", -5, -5)
 
@@ -414,7 +417,7 @@ local function _CreateButtons() -- Create small Wishlist-buttons to EJ's loot vi
 
 			button.LOIHLoot = container
 		end
-	end
+	--end
 end
 
 local function _PopulateRaids() -- Populate Raids-table from EJ
@@ -452,9 +455,11 @@ local function _PopulateRaids() -- Populate Raids-table from EJ
 		end
 	--end
 
-	openHeaders[EJ_GetInstanceInfo(_latestTier)] = true
-	private.FilterList()
-	private.Frame_UpdateList()
+	if _latestTier > 0 then
+		openHeaders[EJ_GetInstanceInfo(_latestTier)] = true
+		private.FilterList()
+		private.Frame_UpdateList()
+	end
 end
 
 local _CheckGear, _CheckBags
@@ -518,8 +523,20 @@ do -- _CheckBags() - Checks inventory for items on wishlist
 	local function DelayedCheck()
 		local bag, slot = 0, 0
 		for bag = 0, NUM_BAG_SLOTS do
-			for slot = 1, GetContainerNumSlots(bag) do
-				local itemID, difficultyID = _CheckLink(GetContainerItemLink(bag, slot))
+			local numSlots
+			if C_Container then
+				numSlots = C_Container.GetContainerNumSlots(bag)
+			else
+				numSlots = GetContainerNumSlots(bag)
+			end
+			for slot = 1, numSlots do
+				local itemLink
+				if C_Container then
+					itemLink = C_Container.GetContainerItemLink(bag, slot)
+				else
+					itemLink = GetContainerItemLink(bag, slot)
+				end
+				local itemID, difficultyID = _CheckLink(itemLink)
 
 				for subTable in pairs(db) do
 					--if db[subTable][itemID] and db[subTable][itemID].difficulty <= difficultyID then -- Item found, upgrade or remove from wishlist
@@ -776,9 +793,10 @@ local function _CheckVanityItems(itemClassID, itemSubClassID)
 end
 
 local function HookEJUpdate(self, ...) -- Hook EJ Update for wishlist-buttons
-	local button
-	for i = 1, 8 do
-		button = _G["EncounterJournalEncounterFrameInfoLootScrollFrameButton"..i]
+	EncounterJournalEncounterFrameInfo.LootContainer.ScrollBox:ForEachFrame(function(button)
+		if not button.LOIHLoot then -- Create Buttons on demand
+			_CreateButtons(button)
+		end
 
 		if button.CanIMogItOverlay then
 			button.LOIHLoot:SetPoint("TOPRIGHT", -20, -5)
@@ -853,7 +871,8 @@ local function HookEJUpdate(self, ...) -- Hook EJ Update for wishlist-buttons
 				end
 			end
 		end
-	end
+
+	end)
 end
 
 local function ShowWishlistOnBonusRoll(spellID, difficultyID) -- Show Wishlist on BonusRollFrame
@@ -963,10 +982,10 @@ function private:ADDON_LOADED(addon)
 
 			Debug("Blizzard_EncounterJournal pre-loaded")
 
-			_CreateButtons()
+			--_CreateButtons() -- Create Buttons on demand
 			_PopulateRaids()
 
-			EncounterJournalEncounterFrameInfoLootScrollFrame:HookScript("OnUpdate", HookEJUpdate)
+			EncounterJournalEncounterFrameInfo.LootContainer:HookScript("OnUpdate", HookEJUpdate)
 		end
 
 		LOIHLootDB = initDB(LOIHLootDB, cfgDefaults)
@@ -1000,10 +1019,10 @@ function private:ADDON_LOADED(addon)
 			Debug("Blizzard_EncounterJournal post-loaded")
 		end
 
-		_CreateButtons()
+		--_CreateButtons() -- Create Buttons on demand
 		_PopulateRaids()
 
-		EncounterJournalEncounterFrameInfoLootScrollFrame:HookScript("OnUpdate", HookEJUpdate)
+		EncounterJournalEncounterFrameInfo.LootContainer:HookScript("OnUpdate", HookEJUpdate)
 	else return end
 end
 
