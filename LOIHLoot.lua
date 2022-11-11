@@ -364,7 +364,7 @@ local function _WishlistOnClick(button, ...) -- EJ Wishlist-buttons OnClick-scri
 	_WishlistOnEnter(button, ...)
 end
 
-buttonCount = 0
+local buttonCount = 0
 local function _CreateButtons(button) -- Create small Wishlist-buttons to EJ's loot view
 	Debug("Button Factory running", buttonCount + 1)
 
