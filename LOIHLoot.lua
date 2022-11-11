@@ -175,7 +175,7 @@ local openHeaders = {}			-- Open headers
 local _syncStatus = ""			-- Status of Sync-data
 local syncedRoster = {}			-- Table to keep track of Synced people, 0 = unsynced, 1 = no reply, 2 = synced
 local currentRoster = {}		-- Helper table to keep track of roster changes
-local normalDifficultyID = 3	-- difficultyID for normal because LFR is higher than normal difficulty, LFR = 4, N = 3, H = 5, M = 6
+local normalDifficultyID = Enum.ItemCreationContext.RaidNormal	-- difficultyID for normal because LFR is higher than normal difficulty, LFR = 4, N = 3, H = 5, M = 6
 
 local ignoredInstaces = {		-- Ignored instanceIDs when populating Raids-table
 	-- World Bosses
@@ -475,24 +475,24 @@ do -- _CheckGear() - Checks equipment for items on wishlist
 					--if db[subTable][itemID] and db[subTable][itemID].difficulty <= difficultyID then -- Item found, upgrade or remove from wishlist
 					if db[subTable][itemID] then
 						if db[subTable][itemID].difficulty <= difficultyID then -- Item found, upgrade or remove from wishlist
-							if difficultyID >= 6 then -- Mythic or something went wrong
+							if difficultyID >= Enum.ItemCreationContext.RaidMythic then -- Mythic or something went wrong (>= 6)
 								Debug("Remove by Equiped:", itemID, difficultyID, subTable)
 
 								db[subTable][itemID] = nil
-							elseif difficultyID == 4 then -- LFR (is between normal and heroic, drop down to normal)
+							elseif difficultyID == Enum.ItemCreationContext.RaidFinder then -- LFR (is between normal and heroic, drop down to normal) (== 4)
 								Debug("Upgraded by Equiped:", itemID, difficultyID, normalDifficultyID, subTable)
 
-								db[subTable][itemID].difficulty = normalDifficultyID							
-							elseif difficultyID == normalDifficultyID then -- Normal difficulty (LFR is between normal and heroic for some reason, skip LFR)
-								Debug("Upgraded by Equiped:", itemID, difficultyID, difficultyID + 2, subTable)
+								db[subTable][itemID].difficulty = normalDifficultyID
+							elseif difficultyID == normalDifficultyID then -- Normal difficulty (LFR is between normal and heroic for some reason, skip LFR) (== 3)
+								Debug("Upgraded by Equiped:", itemID, difficultyID, Enum.ItemCreationContext.RaidHeroic, subTable)
 
-								db[subTable][itemID].difficulty = difficultyID + 2
+								db[subTable][itemID].difficulty = Enum.ItemCreationContext.RaidHeroic
 							else -- Heroic (5)
-								Debug("Upgraded by Equiped:", itemID, difficultyID, difficultyID + 1, subTable)
+								Debug("Upgraded by Equiped:", itemID, difficultyID, Enum.ItemCreationContext.RaidMythic, subTable)
 
-								db[subTable][itemID].difficulty = difficultyID + 1
+								db[subTable][itemID].difficulty = Enum.ItemCreationContext.RaidMythic
 							end
-						elseif db[subTable][itemID].difficulty > 6 then -- Bugged item, shouldn't exist
+						elseif db[subTable][itemID].difficulty > Enum.ItemCreationContext.RaidMythic then -- Bugged item, shouldn't exist (> 6)
 							Debug("Remove BUGGED by Equiped:", itemID, difficultyID, subTable)
 
 							db[subTable][itemID] = nil
@@ -542,24 +542,24 @@ do -- _CheckBags() - Checks inventory for items on wishlist
 					--if db[subTable][itemID] and db[subTable][itemID].difficulty <= difficultyID then -- Item found, upgrade or remove from wishlist
 					if db[subTable][itemID] then
 						if db[subTable][itemID].difficulty <= difficultyID then -- Item found, upgrade or remove from wishlist
-							if difficultyID >= 6 then -- Mythic or something went wrong
+							if difficultyID >= Enum.ItemCreationContext.RaidMythic then -- Mythic or something went wrong (>= 6)
 								Debug("Remove by Bags:", itemID, difficultyID, subTable)
 
 								db[subTable][itemID] = nil
-							elseif difficultyID == 4 then -- LFR (is between normal and heroic, drop down to normal)
+							elseif difficultyID == Enum.ItemCreationContext.RaidFinder then -- LFR (is between normal and heroic, drop down to normal) (== 4)
 								Debug("Upgraded by Bags:", itemID, difficultyID, normalDifficultyID, subTable)
 
 								db[subTable][itemID].difficulty = normalDifficultyID
-							elseif difficultyID == normalDifficultyID then -- Normal difficulty (LFR is between normal and heroic for some reason, skip LFR)
-								Debug("Upgraded by Bags:", itemID, difficultyID, difficultyID + 2, subTable)
+							elseif difficultyID == normalDifficultyID then -- Normal difficulty (LFR is between normal and heroic for some reason, skip LFR) (== 3)
+								Debug("Upgraded by Bags:", itemID, difficultyID, Enum.ItemCreationContext.RaidHeroic, subTable)
 
-								db[subTable][itemID].difficulty = difficultyID + 2
+								db[subTable][itemID].difficulty = Enum.ItemCreationContext.RaidHeroic
 							else -- Heroic (5)
-								Debug("Upgraded by Bags:", itemID, difficultyID, difficultyID + 1, subTable)
+								Debug("Upgraded by Bags:", itemID, difficultyID, Enum.ItemCreationContext.RaidMythic, subTable)
 
-								db[subTable][itemID].difficulty = difficultyID + 1
+								db[subTable][itemID].difficulty = Enum.ItemCreationContext.RaidMythic
 							end
-						elseif db[subTable][itemID].difficulty > 6 then -- Bugged item, shouldn't exist
+						elseif db[subTable][itemID].difficulty > Enum.ItemCreationContext.RaidMythic then -- Bugged item, shouldn't exist (> 6)
 							Debug("Remove BUGGED by Bags:", itemID, difficultyID, subTable)
 
 							db[subTable][itemID] = nil
@@ -598,11 +598,11 @@ end
 
 local function _SyncLine() -- Form the "Last sync"-line for textelement
 	local difficultyName = L.UNKNOWN
-	if private.difficultyID == 14 then 	-- Normal Raid
+	if private.difficultyID == DifficultyUtil.ID.PrimaryRaidNormal then 	-- Normal Raid (14)
 		difficultyName = PLAYER_DIFFICULTY1
-	elseif private.difficultyID == 15 then -- Heroic Raid
+	elseif private.difficultyID == DifficultyUtil.ID.PrimaryRaidHeroic then -- Heroic Raid (15)
 		difficultyName = PLAYER_DIFFICULTY2
-	elseif private.difficultyID == 16 then -- Mythic Raid
+	elseif private.difficultyID == DifficultyUtil.ID.PrimaryRaidMythic then -- Mythic Raid (16)
 		difficultyName = PLAYER_DIFFICULTY6
 	end
 
@@ -777,14 +777,14 @@ end
 local function _CheckVanityItems(itemClassID, itemSubClassID)
 	local vanityItem = false
 
-	if itemClassID == 15 then -- Miscellaneous (15)
-		if itemSubClassID == 5 then -- Mount (5)
+	if itemClassID == Enum.ItemClass.Miscellaneous then -- Miscellaneous (15)
+		if itemSubClassID == Enum.ItemMiscellaneousSubclass.Mount then -- Mount (5)
 			vanityItem = true
-		elseif itemSubClassID == 2 then -- Companion Pets (2)
+		elseif itemSubClassID == Enum.ItemMiscellaneousSubclass.CompanionPet then -- Companion Pets (2)
 			vanityItem = true
 		end
-	elseif itemClassID == 0 then -- Consumable (0)
-		if itemSubClassID == 8 then -- Other (8)
+	elseif itemClassID == Enum.ItemClass.Consumable then -- Consumable (0)
+		if itemSubClassID == 8 then -- Other (8) - Enum.ItemConsumableSubclass.Other returns 7 (wrong) instead of 8 (right)
 			vanityItem = true
 		end
 	end
@@ -819,9 +819,9 @@ local function HookEJUpdate(self, ...) -- Hook EJ Update for wishlist-buttons
 				button.LOIHLoot.off:Hide()
 				button.LOIHLoot.vanity:Show()
 				if db.vanity[button.itemID] then -- Item
-					if db.vanity[button.itemID].difficulty == normalDifficultyID and difficultyID == 4 then -- Normal in DB, LFR in view
+					if db.vanity[button.itemID].difficulty == normalDifficultyID and difficultyID == Enum.ItemCreationContext.RaidFinder then -- Normal in DB, LFR in view
 						button.LOIHLoot.vanity:SetNormalTexture(downTex)
-					elseif db.vanity[button.itemID].difficulty == 4 and difficultyID == normalDifficultyID then -- LFR in DB, Normal in view
+					elseif db.vanity[button.itemID].difficulty == Enum.ItemCreationContext.RaidFinder and difficultyID == normalDifficultyID then -- LFR in DB, Normal in view
 						button.LOIHLoot.vanity:SetNormalTexture(upTex)
 					elseif db.vanity[button.itemID].difficulty == difficultyID then -- This difficulty
 						button.LOIHLoot.vanity:SetNormalTexture(checkTex)
@@ -839,9 +839,9 @@ local function HookEJUpdate(self, ...) -- Hook EJ Update for wishlist-buttons
 				button.LOIHLoot.vanity:Hide()
 
 				if db.main[button.itemID] then -- Item
-					if db.main[button.itemID].difficulty == normalDifficultyID and difficultyID == 4 then -- Normal in DB, LFR in view
+					if db.main[button.itemID].difficulty == normalDifficultyID and difficultyID == Enum.ItemCreationContext.RaidFinder then -- Normal in DB, LFR in view
 						button.LOIHLoot.main:SetNormalTexture(downTex)
-					elseif db.main[button.itemID].difficulty == 4 and difficultyID == normalDifficultyID then -- LFR in DB, Normal in view
+					elseif db.main[button.itemID].difficulty == Enum.ItemCreationContext.RaidFinder and difficultyID == normalDifficultyID then -- LFR in DB, Normal in view
 						button.LOIHLoot.main:SetNormalTexture(upTex)
 					elseif db.main[button.itemID].difficulty == difficultyID then -- This difficulty
 						button.LOIHLoot.main:SetNormalTexture(checkTex)
@@ -855,9 +855,9 @@ local function HookEJUpdate(self, ...) -- Hook EJ Update for wishlist-buttons
 				end
 
 				if db.off[button.itemID] then -- Item
-					if db.off[button.itemID].difficulty == normalDifficultyID and difficultyID == 4 then -- Normal in DB, LFR in view
+					if db.off[button.itemID].difficulty == normalDifficultyID and difficultyID == Enum.ItemCreationContext.RaidFinder then -- Normal in DB, LFR in view
 						button.LOIHLoot.off:SetNormalTexture(downTex)
-					elseif db.off[button.itemID].difficulty == 4 and difficultyID == normalDifficultyID then -- LFR in DB, Normal in view
+					elseif db.off[button.itemID].difficulty == Enum.ItemCreationContext.RaidFinder and difficultyID == normalDifficultyID then -- LFR in DB, Normal in view
 						button.LOIHLoot.off:SetNormalTexture(upTex)
 					elseif db.off[button.itemID].difficulty == difficultyID then -- This difficulty
 						button.LOIHLoot.off:SetNormalTexture(checkTex)
@@ -879,7 +879,7 @@ local function ShowWishlistOnBonusRoll(spellID, difficultyID) -- Show Wishlist o
 	local instanceID, encounterID = GetJournalInfoForSpellConfirmation(spellID)
 	instanceID = instanceID or BonusRollFrame.instanceID
 	encounterID = encounterID or BonusRollFrame.encounterID
-	difficultyID = difficultyID or BonusRollFrame.difficultyID or GetBonusRollEncounterJournalLinkDifficulty() or 14 -- difficultyID or fall back to "Normal"
+	difficultyID = difficultyID or BonusRollFrame.difficultyID or GetBonusRollEncounterJournalLinkDifficulty() or DifficultyUtil.ID.PrimaryRaidNormal -- difficultyID or fall back to "Normal" (14)
 
 	if not instanceID or not encounterID or not Raids[instanceID] then -- Only show Wishlist for stuff that is listed in the addon
 		Debug("ShowWishlistOnBonusRoll -> Exit", instanceID, encounterID, difficultyID, Raids[instanceID] and "OK" or "NOT")
@@ -892,20 +892,24 @@ local function ShowWishlistOnBonusRoll(spellID, difficultyID) -- Show Wishlist o
 	Debug("ShowWishlistOnBonusRoll:", instanceID, encounterID, difficultyID)
 
 	local itemDifficulty
-	if difficultyID == 14 then 	-- Normal Raid
-		itemDifficulty = 3
-	elseif difficultyID == 15 then -- Heroic Raid
-		itemDifficulty = 5
-	elseif difficultyID == 16 then -- Mythic Raid
-		itemDifficulty = 6
-	elseif difficultyID == 17 then -- LFR
-		itemDifficulty = 4
+	if difficultyID == DifficultyUtil.ID.PrimaryRaidNormal then 	-- Normal Raid (14)
+		itemDifficulty = normalDifficultyID -- (3)
+	elseif difficultyID == DifficultyUtil.ID.PrimaryRaidHeroic then -- Heroic Raid (15)
+		itemDifficulty = Enum.ItemCreationContext.RaidHeroic -- (5)
+	elseif difficultyID == DifficultyUtil.ID.PrimaryRaidMythic then -- Mythic Raid (16)
+		itemDifficulty = Enum.ItemCreationContext.RaidMythic -- (6)
+	elseif difficultyID == DifficultyUtil.ID.PrimaryRaidLFR then -- LFR (17)
+		itemDifficulty = Enum.ItemCreationContext.RaidFinder -- (4)
 	end
 
 	local mainCount, offCount, vanityCount = 0, 0, 0
 	for subTable, tableData in pairs(db) do
 		for itemID, itemData in pairs(tableData) do
-			if itemData and ((itemDifficulty == 4 and itemData.difficulty == 4) or (itemDifficulty == 3 and itemData.difficulty <= 4) or (itemDifficulty >= 5 and itemData.difficulty <= itemDifficulty)) then
+			if itemData and (
+				(itemDifficulty == Enum.ItemCreationContext.RaidFinder and itemData.difficulty == Enum.ItemCreationContext.RaidFinder) or	-- Drop == LFR		List == LFR
+				(itemDifficulty == normalDifficultyID and itemData.difficulty <= Enum.ItemCreationContext.RaidFinder) or	-- Drop == Normal	List <= LFR (LFR or Normal)
+				(itemDifficulty >= Enum.ItemCreationContext.RaidHeroic and itemData.difficulty <= itemDifficulty))							-- Drop >= Heroic	List >= Heroic (Heroic or Mythic)
+			then
 				if itemData.encounter == encounterID then
 					Debug("!!!", itemID, itemData.encounter, itemData.difficulty, subTable)
 					if subTable == "main" then
@@ -1370,12 +1374,12 @@ function private.Frame_SyncButtonOnClick(self) -- Send SyncRequest
 	private.difficultyID = GetRaidDifficultyID()
 	_raidCount = GetNumGroupMembers()
 
-	if private.difficultyID == 14 then 	-- Normal Raid
-		_SendSyncRequest(3)
-	elseif private.difficultyID == 15 then -- Heroic Raid
-		_SendSyncRequest(5)
-	elseif private.difficultyID == 16 then -- Mythic Raid
-		_SendSyncRequest(6)
+	if private.difficultyID == DifficultyUtil.ID.PrimaryRaidNormal then 	-- Normal Raid (14)
+		_SendSyncRequest(normalDifficultyID) -- (3)
+	elseif private.difficultyID == DifficultyUtil.ID.PrimaryRaidHeroic then -- Heroic Raid (15)
+		_SendSyncRequest(Enum.ItemCreationContext.RaidHeroic) -- (5)
+	elseif private.difficultyID == DifficultyUtil.ID.PrimaryRaidMythic then -- Mythic Raid (16)
+		_SendSyncRequest(Enum.ItemCreationContext.RaidMythic) -- (6)
 	else
 		Print(L.PRT_UNKOWN_DIFFICULTY)
 	end
