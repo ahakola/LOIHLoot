@@ -804,11 +804,10 @@ local function HookEJUpdate(self, ...) -- Hook EJ Update for wishlist-buttons
 			button.LOIHLoot:SetPoint("TOPRIGHT", -5, -5)
 		end
 
-		if not EJ_InstanceIsRaid() then -- Hide buttons in non-raid instances
-			button.LOIHLoot.main:Hide()
-			button.LOIHLoot.off:Hide()
-			button.LOIHLoot.vanity:Hide()
-		elseif button.itemID then
+		if EJ_InstanceIsRaid() and button.itemID then
+			-- In 10.0 Blizzard added these "Very Rare" sub-title buttons to the loot lists
+			-- They don't have button.itemID on them so it is easy to tell them apart from buttons with items
+
 			local _, difficultyID = _CheckLink(button.link) -- Update is spammy as hell when Loot-tab is open, but hopefully the itemLinks-table helps
 			difficultyID = difficultyID or 0
 
@@ -870,6 +869,10 @@ local function HookEJUpdate(self, ...) -- Hook EJ Update for wishlist-buttons
 					button.LOIHLoot.off:SetNormalTexture(emptyTex)
 				end
 			end
+		else -- Hide buttons in non-raid instances
+			button.LOIHLoot.main:Hide()
+			button.LOIHLoot.off:Hide()
+			button.LOIHLoot.vanity:Hide()
 		end
 
 	end)
@@ -1178,7 +1181,8 @@ end
 function private.Frame_SetDescriptionText(pattern, ...) -- Set text to bottom element
 	LOIHLootFrame.TextScrollFrame:Show()
 	LOIHLootFrame.TextBox:SetFormattedText(pattern, ...)
-	LOIHLootFrame.TextScrollFrame.ScrollBar:SetValue(0)
+	--LOIHLootFrame.TextScrollFrame.ScrollBar:SetValue(0)
+	LOIHLootFrame.TextScrollFrame.ScrollBar:ScrollToBegin() -- 10.1 Removes some old ScrollBar templates
 	LOIHLootFrame.TextScrollFrame:UpdateScrollChildRect()
 end
 
