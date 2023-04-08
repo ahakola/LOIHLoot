@@ -207,7 +207,8 @@ textBar:SetPoint("BOTTOMLEFT", textScroll, "BOTTOMRIGHT", 8, 14)
 LOIHLootFrame.TextScrollFrame.ScrollBar = textBar
 
 ScrollFrame_OnLoad(textScroll)
-ScrollFrame_OnScrollRangeChanged(textScroll, 0)
+--ScrollFrame_OnScrollRangeChanged(textScroll, 0)
+textScroll:SetVerticalScroll(0) -- 10.1 Removes some old ScrollBar templates
 
 local textChild = CreateFrame("Frame", "$parentScrollChild", textScroll)
 textChild:SetSize(296, 102)
