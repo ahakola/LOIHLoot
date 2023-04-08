@@ -201,10 +201,13 @@ textScroll:SetScript("OnScrollRangeChanged", function(self, xOffset, yOffset)
 	LOIHLootTextScrollFrameScrollBar:SetValue(0)
 end)
 
+--[[
+-- 10.1 Removes some old ScrollBar templates and leaving this in causes double scrollbars
 local textBar = CreateFrame("Slider", "$parentScrollBar", textScroll, "UIPanelScrollBarTemplate")
 textBar:SetPoint("TOPLEFT", textScroll, "TOPRIGHT", 8, -16)
 textBar:SetPoint("BOTTOMLEFT", textScroll, "BOTTOMRIGHT", 8, 14)
 LOIHLootFrame.TextScrollFrame.ScrollBar = textBar
+]]
 
 ScrollFrame_OnLoad(textScroll)
 --ScrollFrame_OnScrollRangeChanged(textScroll, 0)
