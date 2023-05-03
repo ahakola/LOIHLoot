@@ -157,8 +157,8 @@ local C_Timer = C_Timer
 local math = math
 
 -- Private constants
-private.version = GetAddOnMetadata(ADDON_NAME, "Version")
-private.description = GetAddOnMetadata(ADDON_NAME, "Notes")
+private.version = C_AddOns.GetAddOnMetadata(ADDON_NAME, "Version")
+private.description = C_AddOns.GetAddOnMetadata(ADDON_NAME, "Notes")
 private.LIST_BUTTON_HEIGHT = 23		-- actually 25, but with a y-offset shrinking by 2
 
 --	Local variables
