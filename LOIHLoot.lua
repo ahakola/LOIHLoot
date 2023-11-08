@@ -984,7 +984,7 @@ end
 
 function private:ADDON_LOADED(addon)
 	if addon == ADDON_NAME then
-		if IsAddOnLoaded("Blizzard_EncounterJournal") then
+		if C_AddOns.IsAddOnLoaded("Blizzard_EncounterJournal") then
 			LOIHLootFrame:UnregisterEvent("ADDON_LOADED")
 
 			Debug("Blizzard_EncounterJournal pre-loaded")
@@ -1020,7 +1020,7 @@ function private:ADDON_LOADED(addon)
 	elseif addon == "Blizzard_EncounterJournal" then
 		Debug("Blizzard_EncounterJournal loaded")
 
-		if IsAddOnLoaded(ADDON_NAME) then
+		if C_AddOns.IsAddOnLoaded(ADDON_NAME) then
 			LOIHLootFrame:UnregisterEvent("ADDON_LOADED")
 
 			Debug("Blizzard_EncounterJournal post-loaded")
@@ -1604,8 +1604,8 @@ local SlashHandlers = {
 }
 
 SlashCmdList["LOIHLOOT"] = function(text)
-	if not IsAddOnLoaded("Blizzard_EncounterJournal") then -- Load EJ if it isn't loaded yet, otherwise the LOIHLootFrame will have empty list until we load EJ
-		local loaded, reason = LoadAddOn("Blizzard_EncounterJournal")
+	if not C_AddOns.IsAddOnLoaded("Blizzard_EncounterJournal") then -- Load EJ if it isn't loaded yet, otherwise the LOIHLootFrame will have empty list until we load EJ
+		local loaded, reason = C_AddOns.LoadAddOn("Blizzard_EncounterJournal")
 		
 		if not loaded then
   			Print(ADDON_LOAD_FAILED, "Blizzard_EncounterJournal", _G["ADDON_" .. reason] or reason)
