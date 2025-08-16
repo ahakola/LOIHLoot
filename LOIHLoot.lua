@@ -1449,11 +1449,11 @@ end
 ------------------------------------------------------------------------
 function private:IsItemWishList(itemID)
 	if db then
-    for subTable, tableData in pairs(db) do
-      if tableData[itemID] then
-        return true, subTable
-      end
-    end
+		for subTable, tableData in pairs(db) do
+			if tableData[itemID] then
+				return true, subTable
+			end
+		end
 	end
 	return false
 end
