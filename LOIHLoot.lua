@@ -1445,6 +1445,20 @@ function private.OnEvent(self, event, ...)
 end
 
 ------------------------------------------------------------------------
+--	API
+------------------------------------------------------------------------
+function private:IsItemWishList(itemID)
+	if db then
+    for subTable, tableData in pairs(db) do
+      if tableData[itemID] then
+        return true, subTable
+      end
+    end
+	end
+	return false
+end
+
+------------------------------------------------------------------------
 --	OnLoad function
 ------------------------------------------------------------------------
 
