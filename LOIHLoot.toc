@@ -6,11 +6,7 @@
 ## SavedVariables: LOIHLootDB
 ## SavedVariablesPerCharacter: LOIHLootCharDB
 
-Localization-en.lua
-Localization-de.lua
-Localization-ko.lua
-Localization-ru.lua
-Localization-zh.lua
+Loc\Localization.xml
 
 LOIHLoot.lua
 LOIHLootFrame.xml
