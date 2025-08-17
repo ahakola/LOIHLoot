@@ -1448,6 +1448,9 @@ end
 --	API
 ------------------------------------------------------------------------
 function private:IsItemWishList(itemID)
+	if not itemID then
+		return false
+	end
 	if db then
 		for subTable, tableData in pairs(db) do
 			if tableData[itemID] then
