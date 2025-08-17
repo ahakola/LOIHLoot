@@ -1447,6 +1447,13 @@ end
 ------------------------------------------------------------------------
 --	API
 ------------------------------------------------------------------------
+
+local subTableLongNames = {
+	main = L.LONG_MAINSPEC,
+	off = L.LONG_OFFSPEC,
+	vanity = L.LONG_VANITY
+}
+
 function private:IsItemWishList(itemID)
 	if not itemID then
 		return false
@@ -1454,7 +1461,8 @@ function private:IsItemWishList(itemID)
 	if db then
 		for subTable, tableData in pairs(db) do
 			if tableData[itemID] then
-				return true, subTable
+				local subTableName = subTableLongNames[subTable] or L.UNKNOWN
+				return true, subTableName
 			end
 		end
 	end
