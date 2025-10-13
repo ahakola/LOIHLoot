@@ -1454,6 +1454,25 @@ local subTableLongNames = {
 	vanity = L.LONG_VANITY
 }
 
+--[[--------------------------------------------------------------------
+
+Usage:
+----------
+
+local isItemOnWishlist, whatList = LOIHLOOT_GLOBAL_PRIVATE:IsItemWishList(itemID)
+
+------------------------------------------------------------------------
+
+Example:
+----------
+
+local loadedOrLoading, loaded = C_AddOns.IsAddOnLoaded("LOIHLoot")
+if loadedOrLoading and loaded then
+	local LOIHLoot = LOIHLOOT_GLOBAL_PRIVATE
+	local isItemOnWishlist, whatList = LOIHLoot:IsItemWishList(itemID)
+end
+
+--------------------------------------------------------------------]]--
 function private:IsItemWishList(itemID)
 	if not itemID then
 		return false
