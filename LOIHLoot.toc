@@ -1,4 +1,4 @@
-## Interface: 50500, 110200
+## Interface: 50501, 110205
 ## Author: Sanex (Arathor EU)
 ## Title: LOIHLoot
 ## Version: @project-version@
