@@ -27,7 +27,11 @@ local isMoPClassic = (WOW_PROJECT_ID == WOW_PROJECT_MISTS_CLASSIC)
 local topLeftIcon = LOIHLootFrame:CreateTexture(nil, "BACKGROUND")
 topLeftIcon:SetSize(60, 60)
 topLeftIcon:SetPoint("TOPLEFT", 7, -6)
-SetPortraitToTexture(topLeftIcon, "Interface\\FriendsFrame\\FriendsFrameScrollIcon")
+if SetPortraitToTexture then -- SetPortraitToTexture was removed in Midnight
+	SetPortraitToTexture(topLeftIcon, "Interface\\FriendsFrame\\FriendsFrameScrollIcon")
+else
+	topLeftIcon:SetTexture("Interface\\FriendsFrame\\FriendsFrameScrollIcon")
+end
 LOIHLootFrame.TopLeftIcon = topLeftIcon
 
 local topLeft = LOIHLootFrame:CreateTexture(nil, "BORDER")
