@@ -1130,6 +1130,9 @@ function private:CHAT_MSG_ADDON(prefix, message, channel, sender)
 		Debug(">>> Success:", err)
 	elseif command == "VersionReply" then
 		Debug("< Received VersionReply:", sender, data)
+		if data ~= private.version then
+			Debug(RED_FONT_COLOR:WrapTextInColorCode("!!! Version missmatch:"), sender, "has", RED_FONT_COLOR:WrapTextInColorCode(data), "yours is", NORMAL_FONT_COLOR:WrapTextInColorCode(private.version))
+		end
 	end
 end
 
