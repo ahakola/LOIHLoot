@@ -716,7 +716,7 @@ local function _ProcessReply(sender, data) -- Process received SyncReplies
 		end
 	end
 
-	_syncStatus = GREEN_FONT_COLOR_CODE .. L.SYNCSTATUS_OK .. FONT_COLOR_CODE_CLOSE
+	_syncStatus = GREEN_FONT_COLOR:WrapTextInColorCode(L.SYNCSTATUS_OK)
 	LOIHLootFrame.SyncText:SetText(_syncStatus)
 	private.FilterList()
 	private.Frame_UpdateList()
@@ -984,22 +984,22 @@ local function ShowWishlistOnBonusRoll(spellID, difficultyID) -- Show Wishlist o
 
 	local mainStr, offStr, vanityStr
 	if mainCount > 0 then
-		mainStr = GREEN_FONT_COLOR_CODE .. mainCount .. FONT_COLOR_CODE_CLOSE
+		mainStr = GREEN_FONT_COLOR:WrapTextInColorCode(mainCount)
 	else
 		mainStr = tostring(mainCount)
 	end
 	if offCount > 0 then
-		offStr = GREEN_FONT_COLOR_CODE .. offCount .. FONT_COLOR_CODE_CLOSE
+		offStr = GREEN_FONT_COLOR:WrapTextInColorCode(offCount)
 	else
 		offStr = tostring(offCount)
 	end
 	if vanityCount > 0 then
-		vanityStr = GREEN_FONT_COLOR_CODE .. vanityCount .. FONT_COLOR_CODE_CLOSE
+		vanityStr = GREEN_FONT_COLOR:WrapTextInColorCode(vanityCount)
 	else
 		vanityStr = tostring(vanityCount)
 	end
 
-	LOIHLootFrame.BonusText:SetFormattedText("%s\n%s / %s / %s", NORMAL_FONT_COLOR_CODE .. L.WISHLIST .. FONT_COLOR_CODE_CLOSE, mainStr, offStr, vanityStr)
+	LOIHLootFrame.BonusText:SetFormattedText("%s\n%s / %s / %s", NORMAL_FONT_COLOR:WrapTextInColorCode(L.WISHLIST), mainStr, offStr, vanityStr)
 	LOIHLootFrame.BonusText:Show()
 end
 
@@ -1200,9 +1200,9 @@ do -- GROUP_ROSTER_UPDATE
 		Debug("> Current:", cC, " - Synced:", sC, " - Num:", GetNumGroupMembers())
 
 		if not IsInRaid() then -- Solo, no sync
-			_syncStatus = RED_FONT_COLOR_CODE .. L.SYNCSTATUS_MISSING .. FONT_COLOR_CODE_CLOSE
+			_syncStatus = RED_FONT_COLOR:WrapTextInColorCode(L.SYNCSTATUS_MISSING)
 		elseif changed then -- Roster changed since last sync
-			_syncStatus = ORANGE_FONT_COLOR_CODE .. L.SYNCSTATUS_INCOMPLETE .. FONT_COLOR_CODE_CLOSE
+			_syncStatus = ORANGE_FONT_COLOR:WrapTextInColorCode(L.SYNCSTATUS_INCOMPLETE)
 		end
 		LOIHLootFrame.SyncText:SetText(_syncStatus)
 	end
@@ -1386,8 +1386,10 @@ function private.ButtonOnClick(self) -- Click Boss' name on list
 			if SyncNames[index] then -- Players who need loot
 				for k in pairs(SyncNames[index]) do
 					local _, classFilename = UnitClass(k)
-					local colorStr = RAID_CLASS_COLORS[classFilename].colorStr or "ffffffff"
-					tNames[#tNames + 1] = "|c" .. colorStr .. k .. "|r"
+					--local colorStr = RAID_CLASS_COLORS[classFilename].colorStr or "ffffffff"
+					--tNames[#tNames + 1] = "|c" .. colorStr .. k .. "|r"
+					classFilename = classFilename or "PRIEST"
+					tNames[#tNames + 1] = C_ClassColor.GetClassColor(classFilename):WrapTextInColorCode(k)
 				end
 				if #tNames > 0 then
 					sort(tNames, colorIndependentSort)
@@ -1399,8 +1401,10 @@ function private.ButtonOnClick(self) -- Click Boss' name on list
 			for k in pairs(syncedRoster) do -- Players who don't need loot
 				if not SyncNames[index] or not SyncNames[index][k] then
 					local _, classFilename = UnitClass(k)
-					local colorStr = RAID_CLASS_COLORS[classFilename].colorStr or "ffffffff"
-					tNames[#tNames + 1] = "|c" .. colorStr .. k .. "|r"
+					--local colorStr = RAID_CLASS_COLORS[classFilename].colorStr or "ffffffff"
+					--tNames[#tNames + 1] = "|c" .. colorStr .. k .. "|r"
+					classFilename = classFilename or "PRIEST"
+					tNames[#tNames + 1] = C_ClassColor.GetClassColor(classFilename):WrapTextInColorCode(k)
 				end
 			end
 			if #tNames > 0 then
@@ -1408,9 +1412,9 @@ function private.ButtonOnClick(self) -- Click Boss' name on list
 				dontNeedLoot = strjoin(",", unpack(tNames))
 			end
 
-			private.Frame_SetDescriptionText("%s\n\n%s%s%s\n%s\n%s\n%s\n\n%s\n %s\n%s\n %s", _SyncLine(), HIGHLIGHT_FONT_COLOR_CODE, bossName, FONT_COLOR_CODE_CLOSE, mainText, offText, vanityText, L.NEED_LOOT_FROM_BOSS, needLoot, L.DONT_NEED_LOOT_FROM_BOSS, dontNeedLoot)
+			private.Frame_SetDescriptionText("%s\n\n%s\n%s\n%s\n%s\n\n%s\n %s\n%s\n %s", _SyncLine(), HIGHLIGHT_FONT_COLOR:WrapTextInColorCode(bossName), mainText, offText, vanityText, L.NEED_LOOT_FROM_BOSS, needLoot, L.DONT_NEED_LOOT_FROM_BOSS, dontNeedLoot)
 		else
-			private.Frame_SetDescriptionText("%s\n\n%s%s%s\n%s\n%s\n%s", _SyncLine(), HIGHLIGHT_FONT_COLOR_CODE, bossName, FONT_COLOR_CODE_CLOSE, mainText, offText, vanityText)
+			private.Frame_SetDescriptionText("%s\n\n%s\n%s\n%s\n%s", _SyncLine(), HIGHLIGHT_FONT_COLOR:WrapTextInColorCode(bossName), mainText, offText, vanityText)
 		end
 
 		LOIHLootFrame.selectedID = index
@@ -1546,7 +1550,7 @@ function private.OnLoad(self)
 	private.FilterList()
 
 	-- Set Sync Status Text
-	_syncStatus = RED_FONT_COLOR_CODE .. L.SYNCSTATUS_MISSING .. FONT_COLOR_CODE_CLOSE
+	_syncStatus = RED_FONT_COLOR:WrapTextInColorCode(L.SYNCSTATUS_MISSING)
 	LOIHLootFrame.SyncText:SetText(_syncStatus)
 end
 
@@ -1596,7 +1600,7 @@ local SlashHandlers = {
 	end,
 	[L.CMD_SAVENAMES] = function()
 		cfg.namesPerBoss = not cfg.namesPerBoss
-		Print(L.PRT_SAVENAMES, cfg.namesPerBoss and "|cff00ff00" .. L.ENABLED .. "|r" or "|cffff0000" .. L.DISABLED .. "|r")
+		Print(L.PRT_SAVENAMES, cfg.namesPerBoss and GREEN_FONT_COLOR:WrapTextInColorCode(L.ENABLED) or RED_FONT_COLOR:WrapTextInColorCode(L.DISABLED))
 		if not cfg.namesPerBoss then
 			wipe(SyncNames)
 		end
