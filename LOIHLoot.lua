@@ -325,14 +325,27 @@ local function _WishlistOnEnter(button, ...) -- EJ Wishlist-buttons OnEnter-scri
 		difficultyID = normalDifficultyID
 	end
 
-	if db[subTable][itemID] and db[subTable][itemID].difficulty == difficultyID then -- Remove
-		button.tooltipText = format("|cffffcc00"..tooltipTitleText.."|r\n%s", L.TOOLTIP_WISHLIST_REM)
+	-- Special cases for LFR
+	if db[subTable][itemID] and db[subTable][itemID].difficulty == Enum.ItemCreationContext.RaidFinder and difficultyID < db[subTable][itemID].difficulty then
+		-- Upgrade LFR (4) -> Normal (3)
+		button.tooltipText = format("%s\n%s", NORMAL_FONT_COLOR:WrapTextInColorCode(tooltipTitleText), L.TOOLTIP_WISHLIST_LOWER)
+
+	elseif difficultyID == Enum.ItemCreationContext.RaidFinder then
+		-- Downgrade Normal/Heroic/Mythic (3, 5, 6) -> LFR (4)
+		button.tooltipText = format("%s\n%s", NORMAL_FONT_COLOR:WrapTextInColorCode(tooltipTitleText), L.TOOLTIP_WISHLIST_HIGHER)
+
+	-- Continue with other difficulties
+	elseif db[subTable][itemID] and db[subTable][itemID].difficulty == difficultyID then -- Remove
+		button.tooltipText = format("%s\n%s", NORMAL_FONT_COLOR:WrapTextInColorCode(tooltipTitleText), L.TOOLTIP_WISHLIST_REM)
+
 	elseif db[subTable][itemID] and db[subTable][itemID].difficulty > difficultyID then -- Downgrade
-		button.tooltipText = format("|cffffcc00"..tooltipTitleText.."|r\n%s", L.TOOLTIP_WISHLIST_HIGHER)
+		button.tooltipText = format("%s\n%s", NORMAL_FONT_COLOR:WrapTextInColorCode(tooltipTitleText), L.TOOLTIP_WISHLIST_HIGHER)
+
 	elseif db[subTable][itemID] and db[subTable][itemID].difficulty < difficultyID then -- Upgrade
-		button.tooltipText = format("|cffffcc00"..tooltipTitleText.."|r\n%s", L.TOOLTIP_WISHLIST_LOWER)
+		button.tooltipText = format("%s\n%s", NORMAL_FONT_COLOR:WrapTextInColorCode(tooltipTitleText), L.TOOLTIP_WISHLIST_LOWER)
+
 	else -- Add
-		button.tooltipText = format("|cffffcc00"..tooltipTitleText.."|r\n%s", L.TOOLTIP_WISHLIST_ADD)
+		button.tooltipText = format("%s\n%s", NORMAL_FONT_COLOR:WrapTextInColorCode(tooltipTitleText), L.TOOLTIP_WISHLIST_ADD)
 	end
 
 	GameTooltip:SetOwner(button, "ANCHOR_NONE")
