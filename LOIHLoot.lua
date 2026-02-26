@@ -1756,7 +1756,7 @@ do
 		Version:SetPoint("BOTTOMLEFT", Title, "BOTTOMRIGHT", 16, 0)
 		Version:SetPoint("RIGHT", -24, 0)
 		Version:SetJustifyH("RIGHT")
-		Version:SetText(GAME_VERSION_LABEL .. ": " .. HIGHLIGHT_FONT_COLOR_CODE .. private.version)
+		Version:SetText(GAME_VERSION_LABEL .. ": " .. HIGHLIGHT_FONT_COLOR:WrapTextInColorCode(private.version))
 
 		local SubText = self:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
 		SubText:SetPoint("TOPLEFT", Title, "BOTTOMLEFT", 0, -8)
@@ -1767,11 +1767,11 @@ do
 		local helpText = ""
 		local slash = private.SLASH_COMMAND or "/loihloot"
 		for i = 1, #L.HELP_TEXT do
-			local command, description = strmatch(L.HELP_TEXT[i], "%- (%S+) %- (.+)")
+			local command, description = strmatch(L.HELP_TEXT[i], "(%S+) %- (.+)")
 			if command and description then
-				helpText = format("%s\n\n%s%s %s|r\n%s", helpText, NORMAL_FONT_COLOR_CODE, slash, command, description)
+				helpText = format("%s\n\n%s\n%s", helpText, NORMAL_FONT_COLOR:WrapTextInColorCode(slash .. " " .. command), description)
 			else
-				helpText = helpText .. "\n\n" .. gsub(L.HELP_TEXT[i], " /([^%s,]+)", NORMAL_FONT_COLOR_CODE .. " /%1|r")
+				helpText = helpText .. "\n\n" .. gsub(L.HELP_TEXT[i], " /([^%s,]+)", NORMAL_FONT_COLOR:WrapTextInColorCode(" /%1"))
 			end
 		end
 		helpText = helpText .. "\n\n\n" .. L.REMINDER
