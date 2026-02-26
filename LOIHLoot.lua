@@ -806,11 +806,26 @@ local function _CheckVanityItems(itemClassID, itemSubClassID)
 			vanityItem = true
 		elseif itemSubClassID == Enum.ItemMiscellaneousSubclass.CompanionPet then -- Companion Pets (2)
 			vanityItem = true
+		--[[
+		elseif itemSubClassID == Enum.ItemMiscellaneousSubclass.Junk then -- Junk (0)
+			-- At least in Manaforge Omega (Midnight) toys are subclass Junk, but so are these Synthesize items also?
+			vanityItem = true
+		]]
 		end
 	elseif itemClassID == Enum.ItemClass.Consumable then -- Consumable (0)
 		if itemSubClassID == 8 then -- Other (8) - Enum.ItemConsumableSubclass.Other returns 7 (wrong) instead of 8 (right)
 			vanityItem = true
 		end
+	elseif itemClassID == Enum.ItemClass.Armor then -- Armor (4)
+		if itemSubClassID == Enum.ItemArmorSubclass.Cosmetic then -- Cosmetic (5)
+			vanityItem = true
+		end
+	--[[
+	elseif itemClassID == Enum.ItemClass.Recipe then -- Recipe (9)
+		if itemSubClassID then
+			vanityItem = true
+		end
+	]]
 	end
 
 	return vanityItem
