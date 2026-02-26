@@ -345,32 +345,35 @@ local function _WishlistOnLeave(button, ...) -- EJ Wishlist-buttons OnLeave-scri
 end
 
 local function _WishlistOnClick(button, ...) -- EJ Wishlist-buttons OnClick-script
-	Debug("Click:", button:GetParent():GetParent().itemID, button:GetParent():GetParent().link, button:GetParent():GetParent().encounterID)
+	Debug("Click:", button:GetParent():GetParent().link, button:GetParent():GetParent().itemID, "encounterID:", button:GetParent():GetParent().encounterID)
 	
 	local subTable = button:GetID() == 1 and "main" or button:GetID() == 2 and "off" or button:GetID() == 3 and "vanity" or false
 	local parentItemButton = button:GetParent():GetParent()
 	local itemID, difficultyID = _CheckLink(parentItemButton.link, "EJ")
 
-	Debug("> ID:", button:GetID(), tostring(subTable), EJ_GetCurrentTier(), tostring(difficultyID))
+	Debug("> ID:", button:GetID(), tostring(subTable), "Tier:", EJ_GetCurrentTier(), "difficultyID:", tostring(difficultyID))
 	if (EJ_GetCurrentTier() < 5 or ignoredInstaces[EncounterJournal.instanceID]) then -- Fix missing difficultyId for pre-MoP expansions and World Bosses
 		difficultyID = normalDifficultyID
 	end
-	if not (itemID and difficultyID and subTable) then return end
+	if not (itemID and difficultyID and subTable) then
+		Debug("<=== EXIT EARLY", tostring(itemID), tostring(difficultyID), tostring(subTable))
+		return
+	end
 
 	if db[subTable][itemID] and db[subTable][itemID].difficulty == difficultyID then -- Remove
-		Debug("Remove:", itemID, difficultyID)
+		Debug("-- Remove:", itemID, difficultyID)
 
 		db[subTable][itemID] = nil
 	elseif db[subTable][itemID] and db[subTable][itemID].difficulty > difficultyID then -- Downgrade
-		Debug("Downgrade:", itemID, db[subTable][itemID].difficulty, ">", difficultyID)
+		Debug("-- Downgrade:", itemID, db[subTable][itemID].difficulty, ">", difficultyID)
 
 		db[subTable][itemID].difficulty = difficultyID
 	elseif db[subTable][itemID] and db[subTable][itemID].difficulty < difficultyID then -- Upgrade
-		Debug("Upgrade:", itemID, db[subTable][itemID].difficulty, "<", difficultyID)
+		Debug("-- Upgrade:", itemID, db[subTable][itemID].difficulty, "<", difficultyID)
 
 		db[subTable][itemID].difficulty = difficultyID
 	else -- Add
-		Debug("Add:", itemID, difficultyID)
+		Debug("-- Add:", itemID, difficultyID)
 
 		db[subTable][itemID] = { difficulty = difficultyID, encounter = parentItemButton.encounterID }
 		if subTable == "main" then -- Don't allow same item to be on both MS and OS lists
