@@ -348,7 +348,8 @@ local function _WishlistOnClick(button, ...) -- EJ Wishlist-buttons OnClick-scri
 	Debug("Click:", button:GetParent():GetParent().itemID, button:GetParent():GetParent().link, button:GetParent():GetParent().encounterID)
 	
 	local subTable = button:GetID() == 1 and "main" or button:GetID() == 2 and "off" or button:GetID() == 3 and "vanity" or false
-	local itemID, difficultyID = _CheckLink(button:GetParent():GetParent().link, "EJ")
+	local parentItemButton = button:GetParent():GetParent()
+	local itemID, difficultyID = _CheckLink(parentItemButton.link, "EJ")
 
 	Debug("> ID:", button:GetID(), tostring(subTable), EJ_GetCurrentTier(), tostring(difficultyID))
 	if (EJ_GetCurrentTier() < 5 or ignoredInstaces[EncounterJournal.instanceID]) then -- Fix missing difficultyId for pre-MoP expansions and World Bosses
@@ -371,13 +372,13 @@ local function _WishlistOnClick(button, ...) -- EJ Wishlist-buttons OnClick-scri
 	else -- Add
 		Debug("Add:", itemID, difficultyID)
 
-		db[subTable][itemID] = { difficulty = difficultyID, encounter = button:GetParent():GetParent().encounterID }
+		db[subTable][itemID] = { difficulty = difficultyID, encounter = parentItemButton.encounterID }
 		if subTable == "main" then -- Don't allow same item to be on both MS and OS lists
 			db.off[itemID] = nil
-			button:GetParent():GetParent().LOIHLoot.off:SetNormalTexture(emptyTex)
+			parentItemButton.LOIHLoot.off:SetNormalTexture(emptyTex)
 		elseif subTable == "off" then
 			db.main[itemID] = nil
-			button:GetParent():GetParent().LOIHLoot.main:SetNormalTexture(emptyTex)
+			parentItemButton.LOIHLoot.main:SetNormalTexture(emptyTex)
 		end
 	end
 
