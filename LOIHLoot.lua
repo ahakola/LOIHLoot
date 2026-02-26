@@ -275,9 +275,13 @@ local function _CheckLink(link, context) -- Return itemID and difficultyID from 
 		return itemLinks[link].id, itemLinks[link].difficulty
 	end
 	--item:itemID:enchantID:gemID1:gemID2:gemID3:gemID4:suffixID:uniqueID:linkLevel:specializationID:upgradeTypeID:instanceDifficultyID:numBonusIDs
-	local _, itemID, _, _, _, _, _, _, _, _, _, _, difficultyID = strsplit(":", link)
+	--local _, itemID, _, _, _, _, _, _, _, _, _, _, difficultyID = strsplit(":", link)
+	--|cnIQ4:|Hitem:237731::::::::60:268::3:1:3524:1:28:3228:::::|h[Ergospheric Cudgel]|h|r
+	local _, linkOptions = LinkUtil.ExtractLink(link)
+	--itemID : enchantID : gemID1 : gemID2 : gemID3 : gemID4 : suffixID : uniqueID : linkLevel : specializationID : modifiersMask : itemContext
+	local itemID, _, _, _, _, _, _, _, _, _, _, itemContext = strsplit(":", linkOptions)
 	itemID = tonumber(itemID)
-	difficultyID = tonumber(difficultyID)
+	difficultyID = tonumber(itemContext)
 
 	if (context and context == "EJ") and not difficultyID then
 		difficultyID = EJ_GetDifficulty()
