@@ -186,6 +186,7 @@ local ignoredInstaces = {		-- Ignored instanceIDs when populating Raids-table
 	[1192] = true, -- SL
 	[1205] = true, -- DF
 	[1278] = true, -- TWW
+	[1312] = true, -- Midnight
 
 	-- Other
 	[959] = true, -- Invasion Points (Legion)
